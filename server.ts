@@ -254,14 +254,14 @@ app.use(cors());
   const isProd = process.env.NODE_ENV === 'production' || !!process.env.VERCEL;
 
   if (isProd && !process.env.VERCEL) {
-    // Only serve static files via Express if NOT on Vercel (e.g. self-hosted prod)
+    // Only serve static files via Express if NOT on Vercel (e.g. self-hosted node server)
     const distPath = path.resolve(__dirname, 'dist');
     app.use(express.static(distPath));
     app.get('*', (req, res, next) => {
       if (req.path.startsWith('/api/')) return next();
       res.sendFile(path.join(distPath, 'index.html'));
     });
-  } else if (!isProd) {
+  } else if (!isProd && !process.env.VERCEL) {
     // Local Dev / AIS
     import('vite').then(({ createServer: createViteServer }) => {
       createViteServer({
@@ -275,7 +275,7 @@ app.use(cors());
     });
   }
 
-  // Only listen if not on Vercel
+  // Only listen if NOT on Vercel
   if (!process.env.VERCEL && (process.env.NODE_ENV !== 'production' || process.env.RUN_LOCAL === 'true')) {
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, '0.0.0.0', () => {
