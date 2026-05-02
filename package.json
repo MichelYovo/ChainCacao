@@ -1,5 +1,5 @@
 {
-  "name": "chain-cacao-13",
+  "name": "chain-cacao",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -7,8 +7,7 @@
     "dev": "tsx server.ts",
     "build": "vite build",
     "preview": "vite preview",
-    "start": "node dist/server.js",
-    "clean": "rm -rf dist",
+    "start": "tsx server.ts",
     "lint": "tsc --noEmit"
   },
   "dependencies": {
