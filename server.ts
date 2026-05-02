@@ -1,5 +1,5 @@
 import express from 'express';
-import { createServer as createViteServer } from 'vite';
+// import { createServer as createViteServer } from 'vite'; // Dynamic import used below for dev
 import path from 'path';
 import cors from 'cors';
 import { fileURLToPath } from 'url';
@@ -65,14 +65,11 @@ let NOTIFICATIONS = [
 
 export const app = express();
 
-async function startServer() {
-  const PORT = 3000;
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
+app.use(cors());
 
-  app.use(express.json({ limit: '10mb' }));
-  app.use(express.urlencoded({ limit: '10mb', extended: true }));
-  app.use(cors());
-
-  // --- API ROUTES ---
+// --- API ROUTES ---
 
   // Auth Middleware
   const authenticateToken = (req: any, res: any, next: any) => {
@@ -253,29 +250,37 @@ async function startServer() {
     next(err);
   });
 
-  // --- VITE MIDDLEWARE ---
-  if (process.env.NODE_ENV !== 'production') {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: 'spa',
-    });
-    app.use(vite.middlewares);
-  } else {
-    const distPath = path.join(process.cwd(), 'dist');
+  // --- VITE / STATIC SERVING ---
+  const isProd = process.env.NODE_ENV === 'production' || !!process.env.VERCEL;
+
+  if (isProd && !process.env.VERCEL) {
+    // Only serve static files via Express if NOT on Vercel (e.g. self-hosted prod)
+    const distPath = path.resolve(__dirname, 'dist');
     app.use(express.static(distPath));
-    app.get('*', (req, res) => {
+    app.get('*', (req, res, next) => {
+      if (req.path.startsWith('/api/')) return next();
       res.sendFile(path.join(distPath, 'index.html'));
     });
-  }
-
-  if (process.env.NODE_ENV !== 'production' || process.env.RUN_LOCAL === 'true') {
-    app.listen(PORT, '0.0.0.0', () => {
-      console.log(`ChainCacao Server running on http://localhost:${PORT}`);
+  } else if (!isProd) {
+    // Local Dev / AIS
+    import('vite').then(({ createServer: createViteServer }) => {
+      createViteServer({
+        server: { middlewareMode: true },
+        appType: 'spa',
+      }).then(vite => {
+        app.use(vite.middlewares);
+      });
+    }).catch(err => {
+      console.error('Failed to load Vite:', err);
     });
   }
-}
 
-startServer().catch((err) => {
-  console.error('Failed to start server:', err);
-  process.exit(1);
-});
+  // Only listen if not on Vercel
+  if (!process.env.VERCEL && (process.env.NODE_ENV !== 'production' || process.env.RUN_LOCAL === 'true')) {
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`ChainCacao Server running on port ${PORT}`);
+    });
+  }
+
+  export default app;
