@@ -46,18 +46,12 @@ export const Dashboard: React.FC = () => {
 
   const fetchData = async () => {
     try {
-      const [statsData, lotsData, notifsData] = await Promise.all([
-        api.getStats(),
-        api.getAllLots(),
-        api.getNotifications()
-      ]);
-      setStats(statsData);
-      setLots(lotsData);
-      setNotifications(notifsData);
-
+      const data = await api.getDashboardInit();
+      setStats(data.stats);
+      setLots(data.lots);
+      setNotifications(data.notifications);
       if (user?.role === 'Administrateur') {
-        const usersData = await api.getUsers();
-        setUsers(usersData);
+        setUsers(data.users);
       }
     } catch (err) {
       console.error(err);
@@ -91,8 +85,8 @@ export const Dashboard: React.FC = () => {
 
   useEffect(() => {
     fetchData();
-    // Poll for notifications every 30 seconds for interaction demo
-    const interval = setInterval(fetchData, 30000);
+    // Poll for notifications every 60 seconds (reduced for fluidity on slow connections)
+    const interval = setInterval(fetchData, 60000);
     return () => clearInterval(interval);
   }, []);
 
@@ -169,10 +163,10 @@ export const Dashboard: React.FC = () => {
           </div>
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center border border-cacao-dore/20 shadow-lg">
-              <Logo size={32} color="#2d5a27" />
+              <Logo size={32} color="#1a1a1a" />
             </div>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tighter text-cafe-profondeur font-display uppercase italic">
-              Console <span className="text-cacao-vert">Régistre</span>
+              Console <span className="text-cafe-profondeur">Régistre</span>
             </h1>
           </div>
           <p className="text-cafe-moyen font-medium text-lg leading-tight">
@@ -214,7 +208,7 @@ export const Dashboard: React.FC = () => {
                   <h3 className="text-2xl font-black italic">Vos Récoltes Actives</h3>
                   <p className="text-cafe-moyen text-sm font-medium">Récupérez vos QR codes et suivez la validation.</p>
                 </div>
-                <Logo size={64} color="#2d5a27" className="opacity-20" />
+                <Logo size={64} color="#1a1a1a" className="opacity-20" />
               </div>
               <div className="mt-8 space-y-4">
                 {lots.filter(l => l.producerId === user.id).slice(0, 3).map(lot => (

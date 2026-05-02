@@ -60,10 +60,10 @@ export const TrackPage: React.FC = () => {
       {/* Search Header */}
       <section className="text-center space-y-8 pt-10 flex flex-col items-center">
         <div className="w-32 h-32 bg-white rounded-[40px] shadow-2xl flex items-center justify-center p-6 border border-cacao-dore/10">
-          <Logo size={80} color="#2d5a27" />
+          <Logo size={80} color="#1a1a1a" />
         </div>
         <div className="space-y-4">
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-cafe-profondeur">Traçabilité <span className="text-cacao-vert italic">Immuable</span></h1>
+          <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-cafe-profondeur">Traçabilité Immuable</h1>
           <p className="text-cafe-moyen max-w-2xl mx-auto font-medium text-lg">
             Vérifiez l'origine et la conformité EUDR de chaque fève de cacao grâce au protocole ChainCacao.
           </p>

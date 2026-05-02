@@ -1,9 +1,11 @@
 import express from 'express';
-// import { createServer as createViteServer } from 'vite'; // Dynamic import used below for dev
 import path from 'path';
 import cors from 'cors';
 import { fileURLToPath } from 'url';
 import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -86,9 +88,12 @@ app.use(cors());
 
   app.post('/api/auth/login', (req, res) => {
     const { identifier, password } = req.body;
-    const actor = ACTORS.find(a => (a.email === identifier || a.id === identifier) && a.password === password);
+    const cleanId = String(identifier || '').trim();
+    console.log(`Login attempt for: ${cleanId}`);
+    const actor = ACTORS.find(a => (a.email === cleanId || a.id === cleanId) && a.password === password);
 
     if (actor) {
+      console.log(`Login success for: ${actor.name} (${actor.role})`);
       const token = jwt.sign({ 
         id: actor.id, 
         email: actor.email, 
@@ -98,8 +103,30 @@ app.use(cors());
       }, JWT_SECRET);
       res.json({ token, user: { id: actor.id, email: actor.email, role: actor.role, name: actor.name, color: actor.color } });
     } else {
+      console.log(`Login failed for: ${identifier}`);
       res.status(401).json({ message: "Identifiant ou mot de passe incorrect" });
     }
+  });
+
+  // Combined endpoint for dashboard fluidity
+  app.get('/api/dashboard/init', authenticateToken, (req: any, res) => {
+    const stats = {
+      totalLots: lotHistory.length,
+      totalQuantity: lotHistory.reduce((acc, lot) => acc + lot.quantity, 0),
+      activeTransports: lotHistory.filter(l => l.status === 2).length,
+      certifiedLots: lotHistory.filter(l => l.status >= 1).length,
+      eudrComplianceScore: 98.5,
+      regionalDistribution: [
+        { region: "Plateaux", cases: 45 },
+        { region: "Centrale", cases: 22 },
+        { region: "Kara", cases: 12 }
+      ]
+    };
+    const notifications = NOTIFICATIONS.filter(n => n.toRole === req.user.role);
+    const lots = lotHistory;
+    const usersData = req.user.role === 'Administrateur' ? ACTORS : null;
+    
+    res.json({ stats, notifications, lots, users: usersData });
   });
 
   // Admin: Get all users

@@ -99,5 +99,10 @@ export const api = {
   getStats: async (): Promise<Stats> => {
     const res = await fetch(`${API_URL}/cacao/stats`, { headers: getHeaders() });
     return handleResponse(res);
+  },
+  
+  getDashboardInit: async (): Promise<any> => {
+    const res = await fetch(`${API_URL}/dashboard/init`, { headers: getHeaders() });
+    return handleResponse(res);
   }
 };

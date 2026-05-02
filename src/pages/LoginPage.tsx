@@ -49,6 +49,21 @@ export const LoginPage: React.FC = () => {
     }
   };
 
+  const handleShortcutLogin = async (email: string, pass: string) => {
+    setIdentifier(email);
+    setPassword(pass);
+    setIsSubmitting(true);
+    setError('');
+    try {
+      await login({ identifier: email, password: pass });
+      navigate('/dashboard');
+    } catch (err) {
+      setError('Identifiant ou mot de passe incorrect');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-creme flex flex-col items-center justify-center p-6 lg:p-12 relative overflow-hidden">
       {/* Immersive background decorations */}
@@ -60,12 +75,12 @@ export const LoginPage: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         className="mb-8 flex flex-col items-center gap-4 text-center"
       >
-        <Link to="/" className="p-2 bg-white rounded-[24px] shadow-2xl border border-cacao-dore/30 block mb-4 flex items-center justify-center">
-          <Logo size={64} color="#2d5a27" />
+        <Link to="/" className="p-2 bg-white rounded-[24px] shadow-2xl border border-black/10 block mb-4 flex items-center justify-center">
+          <Logo size={64} color="#1a1a1a" />
         </Link>
         <div>
           <h1 className="text-4xl md:text-5xl font-bold tracking-tighter text-cafe-profondeur font-display flex items-center gap-3">
-             <span className="text-cacao-vert">CHAIN</span>CACAO
+             CHAINCACAO
           </h1>
           <p className="text-cafe-moyen font-medium tracking-[0.1em] uppercase text-[9px] mt-2">Console d'Ancrage Immuable • Togo</p>
         </div>
@@ -153,7 +168,7 @@ export const LoginPage: React.FC = () => {
         ].map((acc, i) => (
           <button 
             key={i}
-            onClick={() => { setIdentifier(acc.email); setPassword(acc.pass); }}
+            onClick={() => handleShortcutLogin(acc.email, acc.pass)}
             className="p-3 bg-white/40 border border-cacao-dore/10 rounded-2xl hover:bg-white transition-all text-left"
           >
             <p className="text-[8px] font-black uppercase text-cacao-vert tracking-widest mb-1">{acc.role}</p>

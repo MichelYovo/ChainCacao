@@ -28,7 +28,7 @@ export const LandingPage: React.FC = () => {
             </div>
 
             <h1 className="text-6xl md:text-8xl font-bold tracking-tighter text-cafe-profondeur font-display leading-[0.9]">
-              L'avenir du <span className="text-cacao-vert italic">Cacao</span> est digital.
+              L'avenir du Cacao est digital.
             </h1>
 
             <p className="text-xl text-cafe-moyen font-medium max-w-xl leading-relaxed">
@@ -81,7 +81,7 @@ export const LandingPage: React.FC = () => {
             <div className="glass overflow-hidden rounded-[48px] border-cacao-dore/10 shadow-[0_40px_100px_rgba(0,0,0,0.1)] relative z-10 aspect-[4/5] bg-gradient-to-br from-white/90 to-creme/90 flex flex-col">
               <div className="p-10 flex-1 flex flex-col justify-center items-center text-center space-y-8">
                 <div className="w-32 h-32 bg-white rounded-[40px] flex items-center justify-center shadow-2xl rotate-3 p-4">
-                  <Logo size={80} color="#2d5a27" />
+                  <Logo size={80} color="#000000" />
                 </div>
                 <div className="space-y-4">
                   <h3 className="text-4xl font-display font-bold text-cafe-profondeur">ChainCacao Protocol</h3>
@@ -90,7 +90,7 @@ export const LandingPage: React.FC = () => {
                   </p>
                 </div>
                 <div className="flex gap-2">
-                  {[1,2,3,4,5].map(i => <div key={i} className="w-1.5 h-1.5 rounded-full bg-cacao-vert" />)}
+                  {[1,2,3,4,5].map(i => <div key={i} className="w-1.5 h-1.5 rounded-full bg-cafe-profondeur" />)}
                 </div>
               </div>
               <div className="h-24 bg-cafe-profondeur flex items-center justify-between px-10">
