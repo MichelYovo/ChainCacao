@@ -28,11 +28,11 @@ export const LandingPage: React.FC = () => {
             </div>
 
             <h1 className="text-6xl md:text-8xl font-bold tracking-tighter text-cafe-profondeur font-display leading-[0.9]">
-              L'avenir du Cacao est digital.
+              L'avenir du <span className="font-bold italic">Cacao</span> est digital.
             </h1>
 
             <p className="text-xl text-cafe-moyen font-medium max-w-xl leading-relaxed">
-              La plateforme de traçabilité blockchain pour la filière cacao du Togo. 
+              La plateforme de traçabilité blockchain pour la filière <span className="font-bold italic">cacao</span> du Togo. 
               Garantissez l'origine, assurez la conformité EUDR et valorisez votre production.
             </p>
 
@@ -86,7 +86,7 @@ export const LandingPage: React.FC = () => {
                 <div className="space-y-4">
                   <h3 className="text-4xl font-display font-bold text-cafe-profondeur">ChainCacao Protocol</h3>
                   <p className="text-cafe-moyen font-medium px-8 italic">
-                    "La transparence est le terreau de la confiance. Ensemble, protégeons l'excellence du cacao togolais."
+                    "La transparence est le terreau de la confiance. Ensemble, protégeons l'excellence du <span className="font-bold italic">cacao</span> togolais."
                   </p>
                 </div>
                 <div className="flex gap-2">

@@ -159,12 +159,12 @@ export const LoginPage: React.FC = () => {
         className="mt-8 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 w-full max-w-6xl"
       >
         {[
-          { role: "Admin", email: "admin@chaincacao.tg", pass: "password123" },
+          { role: "Admin", email: "admin@chaincacao.tg", pass: "admin" },
           { role: "Fermier", email: "koffi@farm.tg", pass: "password123" },
           { role: "Coop", email: "coop@cacao.tg", pass: "password123" },
           { role: "Transp", email: "trans@cargo.tg", pass: "password123" },
-          { role: "Usine", email: "factory@choco.tg", pass: "password123" },
-          { role: "Export", email: "export@cacao.tg", pass: "password123" }
+          { role: "Export", email: "export@cargo.tg", pass: "password123" },
+          { role: "Acheteur", email: "buyer@biochoc.eu", pass: "password123" }
         ].map((acc, i) => (
           <button 
             key={i}

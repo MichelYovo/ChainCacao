@@ -6,7 +6,6 @@ import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { LandingPage } from './pages/LandingPage';
 import { Dashboard } from './pages/Dashboard';
-import { RoleDashboard } from './pages/RoleDashboard';
 import { TrackPage } from './pages/TrackPage';
 
 export default function App() {
@@ -24,7 +23,7 @@ export default function App() {
                 <ProtectedRoute>
                   <>
                     <Navbar />
-                    <RoleDashboard />
+                    <Dashboard />
                   </>
                 </ProtectedRoute>
               } 
