@@ -1,0 +1,14 @@
+{
+  "name": "chain-cacao-blockchain",
+  "version": "1.0.0",
+  "description": "Smart contracts for ChainCacao traceability",
+  "main": "index.js",
+  "scripts": {
+    "compile": "hardhat compile",
+    "deploy:amoy": "hardhat run scripts/deploy.cjs --network amoy"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "hardhat": "^2.22.3"
+  }
+}

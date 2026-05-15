@@ -282,7 +282,7 @@ app.use(cors());
 
   if (isProd && !process.env.VERCEL) {
     // Only serve static files via Express if NOT on Vercel (e.g. self-hosted node server)
-    const distPath = path.resolve(__dirname, 'dist');
+    const distPath = path.resolve(__dirname, '../dist');
     app.use(express.static(distPath));
     app.get('*', (req, res, next) => {
       if (req.path.startsWith('/api/')) return next();
@@ -292,6 +292,7 @@ app.use(cors());
     // Local Dev / AIS
     import('vite').then(({ createServer: createViteServer }) => {
       createViteServer({
+        configFile: path.resolve(__dirname, '../frontend/vite.config.ts'),
         server: { middlewareMode: true },
         appType: 'spa',
       }).then(vite => {

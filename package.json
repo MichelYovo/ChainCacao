@@ -4,10 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "tsx server.ts",
-    "build": "vite build",
+    "dev": "tsx backend/server.ts",
+    "build": "vite build --config frontend/vite.config.ts",
     "preview": "vite preview",
-    "start": "tsx server.ts",
+    "start": "tsx backend/server.ts",
     "lint": "tsc --noEmit"
   },
   "dependencies": {
