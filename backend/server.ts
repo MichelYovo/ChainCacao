@@ -67,6 +67,7 @@ let NOTIFICATIONS = [
 
 export const app = express();
 
+async function startServer() {
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(cors());
@@ -289,26 +290,22 @@ app.use(cors());
       res.sendFile(path.join(distPath, 'index.html'));
     });
   } else if (!isProd && !process.env.VERCEL) {
-    // Local Dev / AIS
-    import('vite').then(({ createServer: createViteServer }) => {
-      createViteServer({
-        configFile: path.resolve(__dirname, '../frontend/vite.config.ts'),
-        server: { middlewareMode: true },
-        appType: 'spa',
-      }).then(vite => {
-        app.use(vite.middlewares);
-      });
-    }).catch(err => {
-      console.error('Failed to load Vite:', err);
+// Local Dev / AIS
+    const { createServer: createViteServer } = await import('vite');
+    const vite = await createViteServer({
+      configFile: path.resolve(__dirname, '../frontend/vite.config.ts'),
+      server: { middlewareMode: true },
+      appType: 'spa',
     });
+    app.use(vite.middlewares);
   }
 
-  // Only listen if NOT on Vercel
-  if (!process.env.VERCEL) {
-    const PORT = process.env.PORT || 3000;
-    app.listen(PORT, '0.0.0.0', () => {
-      console.log(`ChainCacao Server running on port ${PORT}`);
-    });
-  }
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`ChainCacao Server running on port ${PORT}`);
+  });
+}
 
-  export default app;
+startServer();
+
+export default app;
