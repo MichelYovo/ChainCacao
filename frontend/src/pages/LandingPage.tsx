@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { Sprout, ShieldCheck, Globe, ArrowRight, Smartphone, Zap } from 'lucide-react';
 
-import { Logo } from '@/components/ui/logo';
+import { Logo } from '../components/ui/logo';
 
 export const LandingPage: React.FC = () => {
   const navigate = useNavigate();
