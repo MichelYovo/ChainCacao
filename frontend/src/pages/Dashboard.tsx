@@ -52,17 +52,6 @@ export const Dashboard: React.FC = () => {
   const [newLot, setNewLot] = useState({ quantity: 1000, origin: '', gps: '', photo: '', note: '' });
   const [selectedQR, setSelectedQR] = useState<string | null>(null);
   const [showPhotoChoice, setShowPhotoChoice] = useState(false);
-  const [isAdminCreating, setIsAdminCreating] = useState(false);
-  const [newUserAccount, setNewUserAccount] = useState({ name: '', email: '', password: '', role: 'Agriculteur', phone: '' });
-
-  const createUserMutation = useMutation({
-    mutationFn: (userData: any) => api.createUser(userData),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['dashboardInit'] });
-      setIsAdminCreating(false);
-      setNewUserAccount({ name: '', email: '', password: '', role: 'Agriculteur', phone: '' });
-    }
-  });
 
   const addLotMutation = useMutation({
     mutationFn: (lotData: any) => api.addLot(lotData),
@@ -220,7 +209,7 @@ export const Dashboard: React.FC = () => {
                         </div>
                       )}
                       <Link to={`/track?id=${lot.id}`} className="p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <ArrowRight size={18} className="text-cacao-vert" />
+                        <ExternalLink size={18} className="text-cacao-vert" />
                       </Link>
                     </div>
                   </div>
@@ -539,105 +528,6 @@ export const Dashboard: React.FC = () => {
                 >
                   Signer & Générer QR Code
                   <ArrowRight size={18} />
-                </button>
-              </div>
-            </form>
-          </motion.div>
-        </div>
-      )}
-
-      {/* Admin Create User Modal */}
-      {isAdminCreating && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-cafe-profondeur/80 backdrop-blur-md" onClick={() => setIsAdminCreating(false)} />
-          <motion.div 
-            initial={{ y: 50, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            className="w-full max-w-xl glass bg-white border-white p-8 md:p-12 relative z-10 shadow-2xl"
-          >
-            <div className="mb-8 flex justify-between items-start">
-              <div>
-                <h3 className="text-3xl font-display font-bold italic tracking-tighter">Nouvel Acteur Filière</h3>
-                <p className="text-cafe-moyen font-medium text-lg italic underline decoration-cacao-dore decoration-2 underline-offset-4 mt-1">Génération d'Identifiants Officiels</p>
-              </div>
-              <button 
-                onClick={() => setIsAdminCreating(false)}
-                className="w-10 h-10 rounded-full bg-creme flex items-center justify-center text-cafe-profondeur hover:rotate-90 transition-transform"
-              >
-                ✕
-              </button>
-            </div>
-            
-            <form onSubmit={(e) => { e.preventDefault(); createUserMutation.mutate(newUserAccount); }} className="space-y-4">
-              <div className="space-y-1">
-                <label className="text-[9px] font-black uppercase text-cafe-clair ml-2">Nom Complet / Organisation</label>
-                <input 
-                  type="text" 
-                  value={newUserAccount.name}
-                  onChange={e => setNewUserAccount({...newUserAccount, name: e.target.value})}
-                  className="w-full px-5 py-3 bg-creme border border-cacao-dore/20 rounded-[15px] outline-none focus:border-cacao-vert transition-all font-bold"
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-[9px] font-black uppercase text-cafe-clair ml-2">Email Professionnel</label>
-                  <input 
-                    type="email" 
-                    value={newUserAccount.email}
-                    onChange={e => setNewUserAccount({...newUserAccount, email: e.target.value})}
-                    className="w-full px-5 py-3 bg-creme border border-cacao-dore/20 rounded-[15px] outline-none focus:border-cacao-vert transition-all font-bold"
-                    required
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[9px] font-black uppercase text-cafe-clair ml-2">Mot de Passe</label>
-                  <input 
-                    type="text" 
-                    value={newUserAccount.password}
-                    onChange={e => setNewUserAccount({...newUserAccount, password: e.target.value})}
-                    className="w-full px-5 py-3 bg-creme border border-cacao-dore/20 rounded-[15px] outline-none focus:border-cacao-vert transition-all font-bold"
-                    placeholder="password123"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-[9px] font-black uppercase text-cafe-clair ml-2">Rôle Système</label>
-                  <select 
-                    value={newUserAccount.role}
-                    onChange={e => setNewUserAccount({...newUserAccount, role: e.target.value})}
-                    className="w-full px-5 py-3 bg-creme border border-cacao-dore/20 rounded-[15px] outline-none focus:border-cacao-vert transition-all font-bold"
-                  >
-                    <option value="Agriculteur">Agriculteur</option>
-                    <option value="Coopérative">Coopérative</option>
-                    <option value="Transporteur">Transporteur</option>
-                    <option value="Exportateur">Exportateur</option>
-                    <option value="Acheteur EU">Acheteur EU</option>
-                    <option value="Ministère">Ministère</option>
-                  </select>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[9px] font-black uppercase text-cafe-clair ml-2">Téléphone</label>
-                  <input 
-                    type="text" 
-                    value={newUserAccount.phone}
-                    onChange={e => setNewUserAccount({...newUserAccount, phone: e.target.value})}
-                    className="w-full px-5 py-3 bg-creme border border-cacao-dore/20 rounded-[15px] outline-none focus:border-cacao-vert transition-all font-bold"
-                    placeholder="+228..."
-                  />
-                </div>
-              </div>
-
-              <div className="pt-4">
-                <button 
-                  type="submit"
-                  className="w-full py-4 bg-cafe-profondeur text-white rounded-[20px] font-black uppercase tracking-[0.2em] text-[10px] hover:bg-cacao-vert transition-colors shadow-xl"
-                >
-                  Enregistrer & Générer ID
                 </button>
               </div>
             </form>

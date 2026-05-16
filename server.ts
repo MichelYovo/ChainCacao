@@ -278,10 +278,27 @@ app.get('/api/cacao/stats', authenticateToken, (req, res) => {
 });
 
 const isProd = process.env.NODE_ENV === 'production' || !!process.env.VERCEL;
-const distPath = isProd ? path.join(process.cwd(), 'dist') : path.join(DIRNAME, 'frontend');
+
+// Vercel and Production static file serving
+const getDistPath = () => {
+  const possiblePaths = [
+    path.join(process.cwd(), 'dist'),
+    path.join(DIRNAME, 'dist'),
+    path.join(DIRNAME, 'frontend/dist'),
+  ];
+  
+  for (const p of possiblePaths) {
+    if (fs.existsSync(path.join(p, 'index.html'))) {
+      return p;
+    }
+  }
+  return isProd ? path.join(process.cwd(), 'dist') : path.join(DIRNAME, 'frontend');
+};
+
+const distPath = getDistPath();
 
 if (isProd) {
-  console.log(`Configuring static files from: ${distPath}`);
+  console.log(`Serving static files from detected path: ${distPath}`);
   app.use(express.static(distPath, {
     maxAge: '1d',
     index: 'index.html'
