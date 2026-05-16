@@ -201,7 +201,7 @@ let NOTIFICATIONS = [
 ];
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
@@ -517,11 +517,6 @@ async function startServer() {
 }
 
 if (process.env.NODE_ENV !== "test" && !process.env.VERCEL) {
-  startServer();
-}
-
-// For local development: start the server
-if (import.meta.url === `file://${process.argv[1]}`) {
   startServer();
 }
 
