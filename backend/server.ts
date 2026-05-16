@@ -65,14 +65,15 @@ let NOTIFICATIONS = [
   { id: 3, toRole: "Ministère", message: "Alerte: Augmentation de production de 15% dans la zone Plateaux.", date: new Date().toISOString(), read: false, type: 'info' }
 ];
 
-export const app = express();
+const app = express();
+const PORT = 3000;
 
 async function startServer() {
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ limit: '10mb', extended: true }));
-app.use(cors());
+  app.use(express.json({ limit: '10mb' }));
+  app.use(express.urlencoded({ limit: '10mb', extended: true }));
+  app.use(cors());
 
-// --- API ROUTES ---
+  // --- API ROUTES ---
 
   // Auth Middleware
   const authenticateToken = (req: any, res: any, next: any) => {
@@ -300,7 +301,6 @@ app.use(cors());
     app.use(vite.middlewares);
   }
 
-  const PORT = process.env.PORT || 3000;
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`ChainCacao Server running on port ${PORT}`);
   });
