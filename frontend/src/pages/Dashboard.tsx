@@ -171,6 +171,16 @@ export const Dashboard: React.FC = () => {
               Console <span className="text-cafe-profondeur">Régistre</span>
             </h1>
           </div>
+          <div className="flex items-center gap-3">
+            <div className="flex -space-x-2">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="w-6 h-6 rounded-full border-2 border-creme bg-cacao-vert flex items-center justify-center">
+                  <ShieldCheck size={10} className="text-white" />
+                </div>
+              ))}
+            </div>
+            <p className="text-[10px] font-black uppercase tracking-widest text-cacao-vert/60">Contrôle Multi-Signature Actif</p>
+          </div>
           <p className="text-cafe-moyen font-medium text-lg leading-tight">
             Connecté en tant que <span className="font-bold text-cafe-profondeur underline decoration-cacao-dore/40 decoration-4">{user?.name}</span>
           </p>

@@ -132,10 +132,14 @@ export const TrackPage: React.FC = () => {
           <Logo size={80} />
         </div>
         <div className="space-y-4">
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-cafe-profondeur">Traçabilité Immuable</h1>
-          <p className="text-cafe-moyen max-w-2xl mx-auto font-medium text-lg">
-            Vérifiez l'origine et la conformité EUDR de chaque fève de cacao grâce au protocole ChainCacao.
-          </p>
+            <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-cafe-profondeur">Traçabilité Immuable</h1>
+            <div className="flex items-center gap-2 justify-center">
+              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-cacao-vert">Réseau Principal Actif</span>
+            </div>
+            <p className="text-cafe-moyen max-w-2xl mx-auto font-medium text-lg">
+              Vérifiez l'origine et la conformité EUDR de chaque fève de cacao grâce au protocole ChainCacao.
+            </p>
         </div>
         
         <div className="max-w-2xl mx-auto mt-12 flex flex-col sm:flex-row gap-4 p-2 glass bg-white/40 border-cacao-dore/5">
