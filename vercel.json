@@ -2,25 +2,34 @@
   "version": 2,
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "env": {
-    "JWT_SECRET": "@JWT_SECRET"
-  },
+  "installCommand": "npm install",
+  "public": false,
   "functions": {
     "api/index.ts": {
-      "runtime": "nodejs20.x"
+      "runtime": "nodejs20.x",
+      "maxDuration": 30
     }
   },
-  "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "/api/index.ts"
-    }
-  ],
   "routes": [
     {
-      "src": "/.*",
-      "dest": "/index.html",
-      "status": 200
+      "src": "/api/(.*)",
+      "dest": "/api/index.ts"
+    },
+    {
+      "src": "/manifest.json",
+      "dest": "/manifest.json"
+    },
+    {
+      "src": "/sw.js",
+      "dest": "/sw.js"
+    },
+    {
+      "src": "/registerSW.js",
+      "dest": "/registerSW.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }
