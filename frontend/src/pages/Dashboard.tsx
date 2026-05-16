@@ -56,6 +56,7 @@ export const Dashboard: React.FC = () => {
   const [showPhotoChoice, setShowPhotoChoice] = useState(false);
   const [isAdminCreating, setIsAdminCreating] = useState(false);
   const [newUserAccount, setNewUserAccount] = useState({ name: '', email: '', password: '', role: 'Agriculteur', phone: '' });
+  const [adminTab, setAdminTab] = useState<'lots' | 'users'>('lots');
 
   const createUserMutation = useMutation({
     mutationFn: (userData: any) => api.createUser(userData),
@@ -384,35 +385,61 @@ export const Dashboard: React.FC = () => {
 
           {user?.role === 'Administrateur' && (
             <div className="space-y-8">
-              <div className="flex justify-between items-center">
-                <h3 className="text-3xl font-black italic text-cafe-profondeur">Gestion des Comptes</h3>
+              <div className="flex items-center gap-4 bg-white/40 p-1.5 rounded-2xl border border-cacao-dore/5 w-fit">
                 <button 
-                  onClick={() => setIsAdminCreating(true)}
-                  className="px-6 py-3 bg-cafe-profondeur text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all"
+                  onClick={() => setAdminTab('lots')}
+                  className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${adminTab === 'lots' ? 'bg-cafe-profondeur text-white shadow-lg' : 'text-cafe-moyen hover:bg-white/50'}`}
                 >
-                  Ajouter Acteur
+                  Suivi des Lots
+                </button>
+                <button 
+                  onClick={() => setAdminTab('users')}
+                  className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${adminTab === 'users' ? 'bg-cafe-profondeur text-white shadow-lg' : 'text-cafe-moyen hover:bg-white/50'}`}
+                >
+                  Comptes Système
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {usersList.map((u: any) => (
-                  <GlassCard key={u.id} className="p-6 space-y-4 border-cacao-dore/10">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-2xl bg-cafe-profondeur/5 flex items-center justify-center text-cafe-profondeur">
-                        <Users size={24} />
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-lg leading-none">{u.name}</h4>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-cacao-vert mt-1">{u.role}</p>
-                      </div>
-                    </div>
-                    <div className="space-y-1 text-xs">
-                      <p className="flex justify-between text-cafe-moyen"><span>ID:</span> <span className="font-mono font-bold text-cafe-profondeur">{u.id}</span></p>
-                      <p className="flex justify-between text-cafe-moyen"><span>Email:</span> <span className="font-bold text-cafe-profondeur">{u.email}</span></p>
-                    </div>
-                  </GlassCard>
-                ))}
-              </div>
+              {adminTab === 'lots' ? (
+                <div className="space-y-6">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-3xl font-black italic text-cafe-profondeur">Flux de Production</h3>
+                  </div>
+                  {/* The global activity table below will show the lots */}
+                </div>
+              ) : (
+                <div className="space-y-8">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-3xl font-black italic text-cafe-profondeur">Gestion des Acteurs</h3>
+                    <button 
+                      onClick={() => setIsAdminCreating(true)}
+                      className="px-6 py-3 bg-cafe-profondeur text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all"
+                    >
+                      Ajouter Acteur
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {usersList.map((u: any) => (
+                      <GlassCard key={u.id} className="p-6 space-y-4 border-cacao-dore/10">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-2xl bg-cafe-profondeur/5 flex items-center justify-center text-cafe-profondeur">
+                            <Users size={24} />
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-lg leading-none">{u.name}</h4>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-cacao-vert mt-1">{u.role}</p>
+                          </div>
+                        </div>
+                        <div className="space-y-1 text-xs">
+                          <p className="flex justify-between text-cafe-moyen"><span>ID:</span> <span className="font-mono font-bold text-cafe-profondeur">{u.id}</span></p>
+                          <p className="flex justify-between text-cafe-moyen"><span>Email:</span> <span className="font-bold text-cafe-profondeur text-right truncate ml-4">{u.email}</span></p>
+                        </div>
+                      </GlassCard>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
