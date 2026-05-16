@@ -67,7 +67,8 @@ export const Navbar: React.FC = () => {
               </>
             ) : (
             <div className="flex items-center gap-4">
-              <Link to="/login" className="px-6 py-2.5 bg-cacao-vert text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-cacao-vert/20">Connexion</Link>
+              <Link to="/login" className="text-[10px] font-black uppercase tracking-widest text-cafe-clair hover:text-white transition-colors">Connexion</Link>
+              <Link to="/register" className="px-6 py-2.5 bg-cacao-vert text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-cacao-vert/20">S'inscrire</Link>
             </div>
           )}
         </div>

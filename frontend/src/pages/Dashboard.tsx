@@ -52,6 +52,18 @@ export const Dashboard: React.FC = () => {
   const [newLot, setNewLot] = useState({ quantity: 1000, origin: '', gps: '', photo: '', note: '' });
   const [selectedQR, setSelectedQR] = useState<string | null>(null);
   const [showPhotoChoice, setShowPhotoChoice] = useState(false);
+  const [isAdminCreating, setIsAdminCreating] = useState(false);
+  const [newUserAccount, setNewUserAccount] = useState({ name: '', email: '', password: '', role: 'Agriculteur', phone: '' });
+  const [adminTab, setAdminTab] = useState<'lots' | 'users'>('lots');
+
+  const createUserMutation = useMutation({
+    mutationFn: (userData: any) => api.createUser(userData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['dashboardInit'] });
+      setIsAdminCreating(false);
+      setNewUserAccount({ name: '', email: '', password: '', role: 'Agriculteur', phone: '' });
+    }
+  });
 
   const addLotMutation = useMutation({
     mutationFn: (lotData: any) => api.addLot(lotData),
@@ -238,8 +250,14 @@ export const Dashboard: React.FC = () => {
                           <p className="text-xs text-creme/60 font-mono italic">{lot.gps}</p>
                         </div>
                       </div>
-                      <div className="px-6 py-3 bg-white/10 text-white rounded-xl text-[10px] font-black uppercase tracking-widest">
-                        En Attente
+                      <div className="flex gap-3">
+                        <button 
+                          onClick={() => transitionMutation.mutate({ id: lot.id, data: { status: 1, label: "Certifié par Coopérative", nextRole: "Transporteur" } })}
+                          className="px-6 py-3 bg-white/20 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white/30 transition-all"
+                        >
+                          Certifier EUDR
+                        </button>
+                        <button className="px-6 py-3 bg-red-500/20 text-red-200 rounded-xl text-[10px] font-black uppercase tracking-widest">Rejeter</button>
                       </div>
                     </div>
                   ))
@@ -261,7 +279,13 @@ export const Dashboard: React.FC = () => {
                       <span className="text-[10px] font-black uppercase bg-orange-50 text-orange-600 px-3 py-1 rounded-full">Prêt pour transit</span>
                     </div>
                     <h4 className="font-display font-bold text-xl mb-1">{lot.id}</h4>
-                    <p className="text-cafe-clair text-xs font-bold uppercase tracking-widest">Chargement: {lot.origin}</p>
+                    <p className="text-cafe-clair text-xs font-bold uppercase tracking-widest mb-6">Chargement: {lot.origin}</p>
+                    <button 
+                      onClick={() => transitionMutation.mutate({ id: lot.id, data: { status: 2, label: "En Transit Logistique", nextRole: "Exportateur" } })}
+                      className="w-full py-4 bg-orange-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-orange-700 transition-colors"
+                    >
+                      Démarrer Livraison
+                    </button>
                   </div>
                 ))}
               </div>
@@ -278,9 +302,12 @@ export const Dashboard: React.FC = () => {
                       <p className="text-lg font-bold">Lot {lot.id}</p>
                       <p className="text-xs font-black uppercase tracking-widest opacity-60">Arrivée prévue au Port de Lomé</p>
                     </div>
-                    <div className="px-8 py-4 bg-cafe-profondeur/10 text-cafe-profondeur rounded-2xl font-black text-[10px] uppercase tracking-widest">
-                      En Approche
-                    </div>
+                    <button 
+                      onClick={() => transitionMutation.mutate({ id: lot.id, data: { status: 3, label: "Reçu par l'Exportateur", nextRole: "Acheteur EU" } })}
+                      className="px-8 py-4 bg-cafe-profondeur text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-transform"
+                    >
+                      Confirmer Réception
+                    </button>
                   </div>
                 ))}
               </div>
@@ -297,9 +324,12 @@ export const Dashboard: React.FC = () => {
                       <p className="text-lg font-bold">Lot {lot.id}</p>
                       <p className="text-xs font-black uppercase tracking-widest opacity-60">En mer • Arrivée EU</p>
                     </div>
-                    <div className="px-8 py-4 bg-white/10 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest">
-                      En Transit
-                    </div>
+                    <button 
+                      onClick={() => transitionMutation.mutate({ id: lot.id, data: { status: 4, label: "Livraison Confirmée EU", nextRole: null as any } })}
+                      className="px-8 py-4 bg-white text-blue-600 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-transform"
+                    >
+                      Confirmer Réception
+                    </button>
                   </div>
                 ))}
               </div>
@@ -308,12 +338,61 @@ export const Dashboard: React.FC = () => {
 
           {user?.role === 'Administrateur' && (
             <div className="space-y-8">
-              <div className="space-y-6">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-3xl font-black italic text-cafe-profondeur">Flux de Production</h3>
-                </div>
-                {/* The global activity table below will show the lots */}
+              <div className="flex items-center gap-4 bg-white/40 p-1.5 rounded-2xl border border-cacao-dore/5 w-fit">
+                <button 
+                  onClick={() => setAdminTab('lots')}
+                  className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${adminTab === 'lots' ? 'bg-cafe-profondeur text-white shadow-lg' : 'text-cafe-moyen hover:bg-white/50'}`}
+                >
+                  Suivi des Lots
+                </button>
+                <button 
+                  onClick={() => setAdminTab('users')}
+                  className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${adminTab === 'users' ? 'bg-cafe-profondeur text-white shadow-lg' : 'text-cafe-moyen hover:bg-white/50'}`}
+                >
+                  Gestion des Acteurs
+                </button>
               </div>
+
+              {adminTab === 'lots' ? (
+                <div className="space-y-6">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-3xl font-black italic text-cafe-profondeur">Flux de Production</h3>
+                  </div>
+                  {/* The global activity table below will show the lots */}
+                </div>
+              ) : (
+                <div className="space-y-8">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-3xl font-black italic text-cafe-profondeur">Comptes Système</h3>
+                    <button 
+                      onClick={() => setIsAdminCreating(true)}
+                      className="px-6 py-3 bg-cafe-profondeur text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all"
+                    >
+                      Ajouter Acteur
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {usersList.map((u: any) => (
+                      <GlassCard key={u.id} className="p-6 space-y-4 border-cacao-dore/10">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-2xl bg-cafe-profondeur/5 flex items-center justify-center text-cafe-profondeur">
+                            <Users size={24} />
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-lg leading-none">{u.name}</h4>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-cacao-vert mt-1">{u.role}</p>
+                          </div>
+                        </div>
+                        <div className="space-y-1 text-xs">
+                          <p className="flex justify-between text-cafe-moyen"><span>ID:</span> <span className="font-mono font-bold text-cafe-profondeur">{u.id}</span></p>
+                          <p className="flex justify-between text-cafe-moyen"><span>Email:</span> <span className="font-bold text-cafe-profondeur text-right truncate ml-4 font-mono">{u.email}</span></p>
+                        </div>
+                      </GlassCard>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -528,6 +607,105 @@ export const Dashboard: React.FC = () => {
                 >
                   Signer & Générer QR Code
                   <ArrowRight size={18} />
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Admin Create User Modal */}
+      {isAdminCreating && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-cafe-profondeur/80 backdrop-blur-md" onClick={() => setIsAdminCreating(false)} />
+          <motion.div 
+            initial={{ y: 50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            className="w-full max-w-xl glass bg-white border-white p-8 md:p-12 relative z-10 shadow-2xl"
+          >
+            <div className="mb-8 flex justify-between items-start">
+              <div>
+                <h3 className="text-3xl font-display font-bold italic tracking-tighter">Nouvel Acteur Filière</h3>
+                <p className="text-cafe-moyen font-medium text-lg italic underline decoration-cacao-dore decoration-2 underline-offset-4 mt-1">Génération d'Identifiants Officiels</p>
+              </div>
+              <button 
+                onClick={() => setIsAdminCreating(false)}
+                className="w-10 h-10 rounded-full bg-creme flex items-center justify-center text-cafe-profondeur hover:rotate-90 transition-transform"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <form onSubmit={(e) => { e.preventDefault(); createUserMutation.mutate(newUserAccount); }} className="space-y-4">
+              <div className="space-y-1">
+                <label className="text-[9px] font-black uppercase text-cafe-clair ml-2">Nom Complet / Organisation</label>
+                <input 
+                  type="text" 
+                  value={newUserAccount.name}
+                  onChange={e => setNewUserAccount({...newUserAccount, name: e.target.value})}
+                  className="w-full px-5 py-3 bg-creme border border-cacao-dore/20 rounded-[15px] outline-none focus:border-cacao-vert transition-all font-bold"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[9px] font-black uppercase text-cafe-clair ml-2">Email Professionnel</label>
+                  <input 
+                    type="email" 
+                    value={newUserAccount.email}
+                    onChange={e => setNewUserAccount({...newUserAccount, email: e.target.value})}
+                    className="w-full px-5 py-3 bg-creme border border-cacao-dore/20 rounded-[15px] outline-none focus:border-cacao-vert transition-all font-bold"
+                    required
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[9px] font-black uppercase text-cafe-clair ml-2">Mot de Passe</label>
+                  <input 
+                    type="text" 
+                    value={newUserAccount.password}
+                    onChange={e => setNewUserAccount({...newUserAccount, password: e.target.value})}
+                    className="w-full px-5 py-3 bg-creme border border-cacao-dore/20 rounded-[15px] outline-none focus:border-cacao-vert transition-all font-bold"
+                    placeholder="password123"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[9px] font-black uppercase text-cafe-clair ml-2">Rôle Système</label>
+                  <select 
+                    value={newUserAccount.role}
+                    onChange={e => setNewUserAccount({...newUserAccount, role: e.target.value})}
+                    className="w-full px-5 py-3 bg-creme border border-cacao-dore/20 rounded-[15px] outline-none focus:border-cacao-vert transition-all font-bold"
+                  >
+                    <option value="Agriculteur">Agriculteur</option>
+                    <option value="Coopérative">Coopérative</option>
+                    <option value="Transporteur">Transporteur</option>
+                    <option value="Exportateur">Exportateur</option>
+                    <option value="Acheteur EU">Acheteur EU</option>
+                    <option value="Ministère">Ministère</option>
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[9px] font-black uppercase text-cafe-clair ml-2">Téléphone</label>
+                  <input 
+                    type="text" 
+                    value={newUserAccount.phone}
+                    onChange={e => setNewUserAccount({...newUserAccount, phone: e.target.value})}
+                    className="w-full px-5 py-3 bg-creme border border-cacao-dore/20 rounded-[15px] outline-none focus:border-cacao-vert transition-all font-bold"
+                    placeholder="+228..."
+                  />
+                </div>
+              </div>
+
+              <div className="pt-4">
+                <button 
+                  type="submit"
+                  className="w-full py-4 bg-cafe-profondeur text-white rounded-[20px] font-black uppercase tracking-[0.2em] text-[10px] hover:bg-cacao-vert transition-colors shadow-xl"
+                >
+                  Enregistrer & Générer ID
                 </button>
               </div>
             </form>
