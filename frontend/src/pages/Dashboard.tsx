@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../components/auth/auth-context';
+import { useAuth } from '../components/authentication/auth-context';
 import { api } from '../services/api';
 import { Lot, Stats } from '../types';
 import { GlassCard } from '../components/ui/glass-card';

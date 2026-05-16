@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../auth/auth-context';
+import { useAuth } from '../authentication/auth-context';
 import { Sprout, LogOut, Search, LayoutDashboard, Bell } from 'lucide-react';
 import { motion } from 'motion/react';
 

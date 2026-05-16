@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../components/auth/auth-context';
+import { useAuth } from '../components/authentication/auth-context';
 import { motion, AnimatePresence } from 'motion/react';
 import { api } from '../services/api';
 import { 
