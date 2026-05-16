@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
+import { get, set, del } from 'idb-keyval';
 import { AuthProvider, ProtectedRoute } from '@/components/security';
 import { Navbar } from '@/components/layout/navbar';
 import { LoginPage } from '@/pages/LoginPage';
@@ -20,9 +21,17 @@ const queryClient = new QueryClient({
   },
 });
 
-const persister = createSyncStoragePersister({
-  storage: window.localStorage,
-});
+const persister = {
+  persistClient: async (client: any) => {
+    await set('react-query-cache', client);
+  },
+  restoreClient: async () => {
+    return await get('react-query-cache');
+  },
+  removeClient: async () => {
+    await del('react-query-cache');
+  },
+};
 
 export default function App() {
   return (

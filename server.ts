@@ -296,14 +296,20 @@ app.use((err: any, req: any, res: any, next: any) => {
 
 async function startServer() {
   // --- VITE / STATIC SERVING ---
-  const isProd = process.env.NODE_ENV === 'production' || fs.existsSync(path.join(DIRNAME, 'index.html'));
+  const isProd = process.env.NODE_ENV === 'production' || !!process.env.VERCEL;
+  const distPath = process.env.VERCEL ? path.join(DIRNAME, 'dist') : DIRNAME;
 
   if (isProd) {
-    const distPath = DIRNAME;
+    console.log(`Serving static files from: ${distPath}`);
     app.use(express.static(distPath));
     app.get('*', (req, res, next) => {
       if (req.path.startsWith('/api/')) return next();
-      res.sendFile(path.join(distPath, 'index.html'));
+      const indexPath = path.join(distPath, 'index.html');
+      if (fs.existsSync(indexPath)) {
+        res.sendFile(indexPath);
+      } else {
+        res.status(404).send('Frontend build not found. Please run build first.');
+      }
     });
   } else {
     // Local Dev / AIS
