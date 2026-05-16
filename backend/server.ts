@@ -323,24 +323,26 @@ async function startServer() {
     });
   }
 
-  const server = app.listen(PORT, '0.0.0.0', () => {
-    console.log(`ChainCacao Server running on http://localhost:${PORT}`);
-  });
+  if (!process.env.VERCEL) {
+    const server = app.listen(PORT, '0.0.0.0', () => {
+      console.log(`ChainCacao Server running on http://localhost:${PORT}`);
+    });
 
-  server.on('error', (e: any) => {
-    if (e.code === 'EADDRINUSE') {
-      console.error('\n' + '='.repeat(50));
-      console.error(` ERREUR : Le port ${PORT} est déjà utilisé !`);
-      console.error('='.repeat(50));
-      console.error(`Un autre serveur ChainCacao est probablement déjà lancé.`);
-      console.error(`Vérifiez vos terminaux ou tuez le processus occupant le port ${PORT}.`);
-      console.error(`Sur Windows : netstat -ano | findstr :${PORT}`);
-      console.error('='.repeat(50) + '\n');
-      process.exit(1);
-    } else {
-      console.error('Erreur serveur critique:', e);
-    }
-  });
+    server.on('error', (e: any) => {
+      if (e.code === 'EADDRINUSE') {
+        console.error('\n' + '='.repeat(50));
+        console.error(` ERREUR : Le port ${PORT} est déjà utilisé !`);
+        console.error('='.repeat(50));
+        console.error(`Un autre serveur ChainCacao est probablement déjà lancé.`);
+        console.error(`Vérifiez vos terminaux ou tuez le processus occupant le port ${PORT}.`);
+        console.error(`Sur Windows : netstat -ano | findstr :${PORT}`);
+        console.error('='.repeat(50) + '\n');
+        process.exit(1);
+      } else {
+        console.error('Erreur serveur critique:', e);
+      }
+    });
+  }
 }
 
 startServer();
