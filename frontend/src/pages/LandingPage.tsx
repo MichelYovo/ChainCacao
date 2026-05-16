@@ -36,19 +36,26 @@ export const LandingPage: React.FC = () => {
               Garantissez l'origine, assurez la conformité EUDR et valorisez votre production.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 pt-4">
+            <div className="flex flex-wrap gap-4 pt-4">
               <button
                 onClick={() => navigate('/register')}
-                className="px-10 py-5 bg-cafe-profondeur text-white rounded-[24px] font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 hover:scale-105 transition-all shadow-2xl shadow-cafe-profondeur/30"
+                className="px-8 py-5 bg-cafe-profondeur text-white rounded-[24px] font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 hover:scale-105 transition-all shadow-2xl shadow-cafe-profondeur/30 flex-1 sm:flex-none"
               >
                 Commencer maintenant
                 <ArrowRight size={18} className="text-cacao-dore" />
               </button>
               <button
                 onClick={() => navigate('/login')}
-                className="px-10 py-5 glass bg-white/50 text-cafe-profondeur rounded-[24px] font-black uppercase tracking-widest text-xs flex items-center justify-center border-cacao-dore/10 hover:bg-white transition-all shadow-lg"
+                className="px-8 py-5 glass bg-white/50 text-cafe-profondeur rounded-[24px] font-black uppercase tracking-widest text-xs flex items-center justify-center border border-cacao-dore/10 hover:bg-white transition-all shadow-lg flex-1 sm:flex-none"
               >
                 Se connecter
+              </button>
+              <button
+                onClick={() => navigate('/mobile')}
+                className="px-8 py-5 bg-cacao-vert text-white rounded-[24px] font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 hover:scale-105 transition-all shadow-xl shadow-cacao-vert/20 w-full sm:w-auto"
+              >
+                <Smartphone size={18} />
+                Installer App Mobile
               </button>
             </div>
 
@@ -80,8 +87,8 @@ export const LandingPage: React.FC = () => {
             <div className="absolute inset-0 bg-cacao-vert-clair/20 rounded-[60px] blur-[100px] animate-pulse" />
             <div className="glass overflow-hidden rounded-[48px] border-cacao-dore/10 shadow-[0_40px_100px_rgba(0,0,0,0.1)] relative z-10 aspect-[4/5] bg-gradient-to-br from-white/90 to-creme/90 flex flex-col">
               <div className="p-10 flex-1 flex flex-col justify-center items-center text-center space-y-8">
-                <div className="w-32 h-32 bg-white rounded-[40px] flex items-center justify-center shadow-2xl rotate-3 p-4">
-                  <Logo size={80} color="#000000" />
+                <div className="w-32 h-32 bg-white rounded-[40px] flex items-center justify-center shadow-2xl rotate-3 p-2">
+                  <Logo size={110} />
                 </div>
                 <div className="space-y-4">
                   <h3 className="text-4xl font-display font-bold text-cafe-profondeur">ChainCacao Protocol</h3>

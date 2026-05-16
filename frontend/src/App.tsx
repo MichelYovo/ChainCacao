@@ -7,6 +7,7 @@ import { RegisterPage } from './pages/RegisterPage';
 import { LandingPage } from './pages/LandingPage';
 import { Dashboard } from './pages/Dashboard';
 import { TrackPage } from './pages/TrackPage';
+import { MobilePage } from './pages/MobilePage';
 
 export default function App() {
   return (
@@ -17,6 +18,7 @@ export default function App() {
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/mobile" element={<MobilePage />} />
             <Route 
               path="/dashboard" 
               element={

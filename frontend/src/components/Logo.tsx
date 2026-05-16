@@ -8,12 +8,16 @@ interface LogoProps {
 
 export const Logo: React.FC<LogoProps> = ({ className = '', size = 48 }) => {
   return (
-    <img 
-      src="/logo.png" 
-      alt="ChainCacao Logo" 
-      width={size} 
-      height={size} 
-      className={`object-contain ${className}`}
-    />
+    <div 
+      className={`flex items-center justify-center overflow-hidden ${className}`} 
+      style={{ width: size, height: size }}
+    >
+      <img 
+        src="/logo.png" 
+        alt="ChainCacao Logo" 
+        referrerPolicy="no-referrer"
+        className="w-full h-full object-contain"
+      />
+    </div>
   );
 };

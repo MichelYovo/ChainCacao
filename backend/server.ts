@@ -21,7 +21,7 @@ let ACTORS = [
   { id: "EXP-500", role: "Exportateur", name: "Togo Export", email: "export@cargo.tg", password: "password123", color: "#DAA520", phone: "+228 93 00 04" },
   { id: "BUY-EU-01", role: "Acheteur EU", name: "BioChoc Europe", email: "buyer@biochoc.eu", password: "password123", color: "#2196F3", phone: "+32 2 00 01", location: "Anvers, Belgique" },
   { id: "MIN-AGRIC-01", role: "Ministère", name: "Direction Agriculture", email: "contact@agriculture.gouv.tg", password: "password123", color: "#1a3a3a", phone: "+228 22 21 00" },
-  { id: "ADMIN-01", role: "Administrateur", name: "Super Administrateur", email: "admin@chaincacao.tg", password: "admin", color: "#333333" }
+  { id: "ADMIN-01", role: "Administrateur", name: "Super Administrateur", email: "admin@chaincacao.tg", password: "CacaoTogo2026!", color: "#333333" }
 ];
 
 // Lot Status: 0: Récolté, 1: Certifié, 2: En Transit, 3: Reçu par Exportateur, 4: Reçu par Acheteur EU
@@ -182,7 +182,7 @@ async function startServer() {
   });
 
   app.post('/api/cacao/add', authenticateToken, (req: any, res) => {
-    const { quantity, origin, gps, photos } = req.body;
+    const { quantity, origin, gps, photos, note } = req.body;
     const newLot = {
       id: `LOT-${Math.floor(1000 + Math.random() * 9000)}`,
       producerId: req.user.id,
@@ -190,6 +190,7 @@ async function startServer() {
       quantity,
       origin,
       gps,
+      note: note || "",
       timestamp: new Date().toISOString(),
       status: 0,
       photos: photos || [],
@@ -323,7 +324,7 @@ async function startServer() {
   }
 
   const server = app.listen(PORT, '0.0.0.0', () => {
-    console.log(`ChainCacao Server running on http://0.0.0.0:${PORT}`);
+    console.log(`ChainCacao Server running on http://localhost:${PORT}`);
   });
 
   server.on('error', (e: any) => {

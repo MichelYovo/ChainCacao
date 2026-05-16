@@ -21,6 +21,8 @@ import {
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { QRCodeCanvas } from 'qrcode.react';
+import { jsPDF } from 'jspdf';
+import { toPng } from 'html-to-image';
 
 import { Logo } from '../components/Logo';
 
@@ -31,6 +33,7 @@ export const TrackPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showQR, setShowQR] = useState(false);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
   useEffect(() => {
     if (searchParams.get('id')) {
@@ -53,6 +56,72 @@ export const TrackPage: React.FC = () => {
     }
   };
 
+  const handleDownloadPDF = async () => {
+    if (!lot) return;
+    setIsGeneratingPDF(true);
+    
+    try {
+      const element = document.getElementById('lot-passport');
+      if (!element) return;
+
+      // Add a temporary class to force standard colors and avoid oklab/oklch errors
+      element.classList.add('pdf-export-mode');
+
+      const dataUrl = await toPng(element, {
+        quality: 0.95,
+        backgroundColor: '#fdfbf7',
+        pixelRatio: 2,
+        // Remove style that might contain oklab/oklch
+        filter: (node: HTMLElement) => {
+          if (node.style) {
+            // Remove oklch/oklab references if they exist in inline styles
+            if (node.style.color?.includes('okl')) node.style.color = 'inherit';
+            if (node.style.backgroundColor?.includes('okl')) node.style.backgroundColor = 'inherit';
+          }
+          return true;
+        }
+      });
+      
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+      });
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      
+      const img = new Image();
+      img.src = dataUrl;
+      await new Promise((resolve) => (img.onload = resolve));
+      
+      const imgWidth = pdfWidth;
+      const imgHeight = (img.height * pdfWidth) / img.width;
+
+      // Simple multi-page support
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(dataUrl, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pdfHeight;
+
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(dataUrl, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pdfHeight;
+      }
+
+      pdf.save(`Certificat_ChainCacao_${lot.id}.pdf`);
+      element.classList.remove('pdf-export-mode');
+    } catch (err) {
+      console.error('Erreur PDF:', err);
+      window.alert("Erreur lors de la génération du PDF. Tentative avec paramètres simplifiés...");
+    } finally {
+      setIsGeneratingPDF(false);
+    }
+  };
+
   return (
     <div className="pt-28 pb-12 px-6 max-w-5xl mx-auto space-y-8 relative">
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-cacao-dore/5 rounded-full blur-[120px] -z-10" />
@@ -60,7 +129,7 @@ export const TrackPage: React.FC = () => {
       {/* Search Header */}
       <section className="text-center space-y-8 pt-10 flex flex-col items-center">
         <div className="w-32 h-32 bg-white rounded-[40px] shadow-2xl flex items-center justify-center p-6 border border-cacao-dore/10">
-          <Logo size={80} color="#1a1a1a" />
+          <Logo size={80} />
         </div>
         <div className="space-y-4">
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-cafe-profondeur">Traçabilité Immuable</h1>
@@ -113,11 +182,20 @@ export const TrackPage: React.FC = () => {
 
       {lot && !loading && (
         <motion.div 
+          id="lot-passport"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="space-y-10"
+          className="space-y-10 p-4 md:p-8 rounded-[40px] bg-[#fdfbf7]"
         >
           {/* Lot Summary Grid */}
+          <div className="certificate-header text-center space-y-6 pb-12 border-b-2 border-cacao-dore/20 mb-10">
+            <div className="w-24 h-24 bg-white rounded-3xl shadow-lg flex items-center justify-center p-2 mx-auto border border-cacao-dore/10">
+              <Logo size={80} />
+            </div>
+            <h1 className="text-4xl font-display font-bold text-cafe-profondeur">Certificat d'Origine & Conformité</h1>
+            <p className="text-cafe-moyen font-black uppercase tracking-[0.3em] text-xs">ChainCacao Protocol • Réseau Polygon</p>
+          </div>
+
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             {[
               { label: "Lot ID", val: lot.id, icon: LinkIcon, color: "text-cacao-vert" },
@@ -158,36 +236,52 @@ export const TrackPage: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
             {/* Timeline */}
             <div className="lg:col-span-2 space-y-10">
-              <div className="space-y-4">
-                <h3 className="text-3xl font-bold font-display italic">Preuves Visuelles & Géo</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <GlassCard className="p-0 overflow-hidden h-64 bg-cafe-profondeur group relative">
-                    {lot.photos && lot.photos.length > 0 ? (
-                      <>
+              <div className="qr-always-show flex justify-center mb-10">
+                <div className="bg-white p-8 rounded-[40px] border-2 border-cacao-dore/20 flex flex-col items-center gap-4">
+                   <QRCodeCanvas value={window.location.href} size={200} includeMargin />
+                   <div className="text-center">
+                     <p className="text-sm font-bold text-cafe-profondeur">Scan pour Vérification Blockchain</p>
+                     <p className="font-mono text-[10px] text-cafe-moyen break-all">{window.location.href}</p>
+                   </div>
+                </div>
+              </div>
+
+              {lot.note && (
+                <div className="bg-cacao-vert/5 border-l-4 border-cacao-vert p-6 rounded-r-3xl">
+                   <p className="text-[10px] font-black uppercase tracking-widest text-cacao-vert mb-2">Note du Producteur</p>
+                   <p className="text-cafe-profondeur font-medium italic text-lg leading-relaxed">
+                     "{lot.note}"
+                   </p>
+                </div>
+              )}
+
+              {(lot.photos && lot.photos.length > 0 || lot.gps) && (
+                <div className="space-y-4">
+                  <h3 className="text-3xl font-bold font-display italic">Preuves Visuelles & Géo</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {lot.photos && lot.photos.length > 0 && (
+                      <GlassCard className="p-0 overflow-hidden h-64 bg-cafe-profondeur group relative">
                         <img src={lot.photos[0]} alt="Lot cocoa" className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-all" />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
                           <span className="text-white text-[10px] font-bold uppercase tracking-widest bg-white/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">Photo Certifiée d'Origine</span>
                         </div>
-                      </>
-                    ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center text-cafe-clair gap-2">
-                        <Globe size={40} className="opacity-20 translate-y-2" />
-                        <span className="text-[10px] font-black uppercase tracking-widest mt-2">Vue Satellite / Photo Terrain</span>
+                      </GlassCard>
+                    )}
+                    {lot.gps && (
+                      <div className="space-y-4">
+                        <GlassCard className="p-6 bg-creme border-cacao-dore/20 flex flex-col justify-center h-full">
+                          <div className="flex items-center gap-2 mb-4">
+                            <MapPin className="text-cacao-vert" />
+                            <h4 className="font-bold text-cafe-profondeur">Localisation GPS</h4>
+                          </div>
+                          <p className="font-mono text-xl text-cafe-profondeur font-bold tracking-tight">{lot.gps}</p>
+                          <p className="text-[10px] font-black uppercase text-cafe-clair tracking-[0.2em] mt-2">Précision: +/- 10m • Verified via Polygon</p>
+                        </GlassCard>
                       </div>
                     )}
-                  </GlassCard>
-                  <div className="space-y-4">
-                    <GlassCard className="p-6 bg-creme border-cacao-dore/20 flex flex-col justify-center h-full">
-                      <div className="flex items-center gap-2 mb-4">
-                        <MapPin className="text-cacao-vert" />
-                        <h4 className="font-bold text-cafe-profondeur">Localisation GPS</h4>
-                      </div>
-                      <p className="font-mono text-xl text-cafe-profondeur font-bold tracking-tight">{lot.gps}</p>
-                      <p className="text-[10px] font-black uppercase text-cafe-clair tracking-[0.2em] mt-2">Précision: +/- 10m • Verified via Polygon</p>
-                    </GlassCard>
                   </div>
                 </div>
-              </div>
+              )}
 
               <h3 className="text-3xl font-bold font-display italic">Cycle de Vie du Lot</h3>
               <div className="space-y-0">
@@ -239,7 +333,7 @@ export const TrackPage: React.FC = () => {
               <GlassCard className="bg-cafe-profondeur text-creme overflow-hidden border-none shadow-2xl relative">
                 {/* Decorative background logo */}
                 <div className="absolute right-[-10%] bottom-[-10%] opacity-10 rotate-12">
-                  <Logo size={200} color="#ffffff" />
+                  <Logo size={200} />
                 </div>
                 
                 <div className="relative z-10 space-y-8">
@@ -279,9 +373,17 @@ export const TrackPage: React.FC = () => {
                     </div>
                   </div>
 
-                  <button className="w-full py-5 bg-gradient-to-r from-cacao-vert to-cacao-vert-clair text-white rounded-2xl font-bold flex items-center justify-center gap-3 hover:scale-105 transition-all shadow-xl shadow-black/30">
-                    <Globe size={20} />
-                    Générer Certificat PDF
+                  <button 
+                    onClick={handleDownloadPDF}
+                    disabled={isGeneratingPDF}
+                    className="w-full py-5 bg-gradient-to-r from-cacao-vert to-cacao-vert-clair text-white rounded-2xl font-bold flex items-center justify-center gap-3 hover:scale-105 transition-all shadow-xl shadow-black/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isGeneratingPDF ? (
+                      <Loader2 className="animate-spin" size={20} />
+                    ) : (
+                      <Globe size={20} />
+                    )}
+                    {isGeneratingPDF ? 'Génération en cours...' : 'Générer Certificat PDF'}
                   </button>
                 </div>
               </GlassCard>
@@ -311,7 +413,7 @@ export const TrackPage: React.FC = () => {
       {!lot && !loading && !error && (
         <div className="py-20 flex flex-col items-center">
           <div className="w-64 h-64 bg-cacao-dore/5 rounded-full flex items-center justify-center relative mb-8">
-            <Logo size={100} color="#b38b59" className="opacity-20" />
+            <Logo size={100} className="opacity-20" />
             <motion.div 
               animate={{ rotate: 360 }}
               transition={{ duration: 20, repeat: Infinity, ease: "linear" }}

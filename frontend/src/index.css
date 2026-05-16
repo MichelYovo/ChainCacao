@@ -29,6 +29,35 @@
   @apply backdrop-blur-xl bg-white/80 border border-cacao-dore/15 rounded-[32px] shadow-xl;
 }
 
+.pdf-export-mode {
+  background-color: #fdfbf7 !important;
+  color: #2C1A0E !important;
+}
+
+.pdf-export-mode .glass {
+  background-color: #ffffff !important;
+  box-shadow: none !important;
+  border: 1px solid rgba(218, 165, 32, 0.2) !important;
+}
+
+.pdf-export-mode button, 
+.pdf-export-mode .qr-temporary-hide {
+  display: none !important;
+}
+
+.pdf-export-mode .qr-always-show,
+.pdf-export-mode .certificate-header {
+  display: block !important;
+}
+
+.certificate-header {
+  display: none;
+}
+
+.qr-always-show {
+  display: none;
+}
+
 .nav-glass {
   @apply bg-cafe-profondeur/95 backdrop-blur-md shadow-2xl border-b border-white/5;
 }

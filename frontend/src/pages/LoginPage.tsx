@@ -75,8 +75,8 @@ export const LoginPage: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         className="mb-8 flex flex-col items-center gap-4 text-center"
       >
-        <Link to="/" className="p-2 bg-white rounded-[24px] shadow-2xl border border-black/10 block mb-4 flex items-center justify-center">
-          <Logo size={64} color="#1a1a1a" />
+        <Link to="/" className="p-3 bg-white rounded-[32px] shadow-2xl border border-black/10 block mb-4 flex items-center justify-center translate-y-2">
+          <Logo size={90} />
         </Link>
         <div>
           <h1 className="text-4xl md:text-5xl font-bold tracking-tighter text-cafe-profondeur font-display flex items-center gap-3">
@@ -150,32 +150,6 @@ export const LoginPage: React.FC = () => {
              <div className="h-1 w-1 rounded-full bg-cacao-vert/30" />
           </div>
         </div>
-      </motion.div>
-
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.4 }}
-        className="mt-8 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 w-full max-w-6xl"
-      >
-        {[
-          { role: "Admin", email: "admin@chaincacao.tg", pass: "admin" },
-          { role: "Fermier", email: "koffi@farm.tg", pass: "password123" },
-          { role: "Coop", email: "coop@cacao.tg", pass: "password123" },
-          { role: "Transp", email: "trans@cargo.tg", pass: "password123" },
-          { role: "Export", email: "export@cargo.tg", pass: "password123" },
-          { role: "Acheteur", email: "buyer@biochoc.eu", pass: "password123" }
-        ].map((acc, i) => (
-          <button 
-            key={i}
-            onClick={() => handleShortcutLogin(acc.email, acc.pass)}
-            className="p-3 bg-white/40 border border-cacao-dore/10 rounded-2xl hover:bg-white transition-all text-left"
-          >
-            <p className="text-[8px] font-black uppercase text-cacao-vert tracking-widest mb-1">{acc.role}</p>
-            <p className="text-[10px] font-bold text-cafe-profondeur truncate">{acc.email}</p>
-            <p className="text-[9px] text-cafe-clair font-mono">pw: {acc.pass}</p>
-          </button>
-        ))}
       </motion.div>
     </div>
   );

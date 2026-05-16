@@ -36,13 +36,15 @@ export const Dashboard: React.FC = () => {
   const [lots, setLots] = useState<Lot[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [newLot, setNewLot] = useState({ quantity: 1000, origin: '', gps: '', photo: '' });
+  const [newLot, setNewLot] = useState({ quantity: 1000, origin: '', gps: '', photo: '', note: '' });
   const [notifications, setNotifications] = useState<any[]>([]);
   const [selectedQR, setSelectedQR] = useState<string | null>(null);
   const [users, setUsers] = useState<any[]>([]);
   const [showPhotoChoice, setShowPhotoChoice] = useState(false);
   const [isAdminCreating, setIsAdminCreating] = useState(false);
   const [newUserAccount, setNewUserAccount] = useState({ name: '', email: '', password: '', role: 'Agriculteur', phone: '' });
+
+  const getWordCount = (str: string) => str.trim().split(/\s+/).filter(Boolean).length;
 
   const fetchData = async () => {
     try {
@@ -99,7 +101,7 @@ export const Dashboard: React.FC = () => {
       });
       await fetchData();
       setShowAddForm(false);
-      setNewLot({ quantity: 1000, origin: '', gps: '', photo: '' });
+      setNewLot({ quantity: 1000, origin: '', gps: '', photo: '', note: '' });
     } catch (err) {
       console.error(err);
     }
@@ -163,7 +165,7 @@ export const Dashboard: React.FC = () => {
           </div>
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center border border-cacao-dore/20 shadow-lg">
-              <Logo size={32} color="#1a1a1a" />
+              <Logo size={32} />
             </div>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tighter text-cafe-profondeur font-display uppercase italic">
               Console <span className="text-cafe-profondeur">Régistre</span>
@@ -208,7 +210,7 @@ export const Dashboard: React.FC = () => {
                   <h3 className="text-2xl font-black italic">Vos Récoltes Actives</h3>
                   <p className="text-cafe-moyen text-sm font-medium">Récupérez vos QR codes et suivez la validation.</p>
                 </div>
-                <Logo size={64} color="#1a1a1a" className="opacity-20" />
+                <Logo size={64} className="opacity-20" />
               </div>
               <div className="mt-8 space-y-4">
                 {lots.filter(l => l.producerId === user.id).slice(0, 3).map(lot => (
@@ -606,17 +608,20 @@ export const Dashboard: React.FC = () => {
                 <div className="flex gap-4">
                   {!newLot.photo ? (
                     <div className="flex-1 flex gap-2">
-                       <button 
-                        type="button"
-                        onClick={() => setNewLot({...newLot, photo: 'https://images.unsplash.com/photo-1542662565-7e4b66bae529?w=400'})}
-                        className="flex-1 px-4 py-4 bg-creme border-2 border-dashed border-cacao-dore/40 rounded-[20px] flex items-center justify-center gap-2 text-cafe-moyen hover:border-cacao-vert hover:text-cacao-vert transition-all"
-                      >
+                       <label className="flex-1 px-4 py-4 bg-creme border-2 border-dashed border-cacao-dore/40 rounded-[20px] flex items-center justify-center gap-2 text-cafe-moyen hover:border-cacao-vert hover:text-cacao-vert transition-all cursor-pointer">
                         <Camera size={18} />
-                        <span className="text-[9px] font-black uppercase tracking-widest">Prendre</span>
-                      </button>
+                        <span className="text-[9px] font-black uppercase tracking-widest">Photographier</span>
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          capture="environment" 
+                          className="hidden" 
+                          onChange={handlePhotoImport} 
+                        />
+                      </label>
                       <label className="flex-1 px-4 py-4 bg-creme border-2 border-dashed border-cacao-dore/40 rounded-[20px] flex items-center justify-center gap-2 text-cafe-moyen hover:border-cacao-vert hover:text-cacao-vert transition-all cursor-pointer">
                         <Maximize2 size={18} />
-                        <span className="text-[9px] font-black uppercase tracking-widest">Importer</span>
+                        <span className="text-[9px] font-black uppercase tracking-widest">Galerie</span>
                         <input type="file" accept="image/*" className="hidden" onChange={handlePhotoImport} />
                       </label>
                     </div>
@@ -634,6 +639,20 @@ export const Dashboard: React.FC = () => {
                 </div>
               </div>
               
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-cafe-clair ml-2">Notes de Récolte ({getWordCount(newLot.note)}/80 mots)</label>
+                <textarea 
+                  placeholder="Ex: Récolte du matin après la pluie. Fèves de qualité A..."
+                  value={newLot.note}
+                  onChange={e => {
+                    if (getWordCount(e.target.value) <= 80 || e.target.value.length < newLot.note.length) {
+                      setNewLot({...newLot, note: e.target.value});
+                    }
+                  }}
+                  className="w-full px-6 py-4 bg-creme border border-cacao-dore/20 rounded-[20px] outline-none focus:ring-2 ring-cacao-vert/20 focus:border-cacao-vert transition-all font-medium text-sm h-32"
+                />
+              </div>
+
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-cafe-clair ml-2">Ancrage GPS (Latitude, Longitude)</label>
                 <div className="relative">

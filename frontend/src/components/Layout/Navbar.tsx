@@ -15,8 +15,8 @@ export const Navbar: React.FC = () => {
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <div className="flex items-center gap-8">
           <Link to="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center border border-white/20 group-hover:scale-110 transition-transform shadow-lg">
-              <Logo size={28} color="white" />
+            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center border border-white/20 group-hover:scale-110 transition-transform shadow-lg">
+              <Logo size={32} />
             </div>
             <h1 className="font-display text-xl font-bold tracking-tight text-white hidden sm:block">
               CHAINCACAO
