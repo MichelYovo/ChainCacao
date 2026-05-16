@@ -4,10 +4,10 @@ import path from 'path';
 import {defineConfig, loadEnv} from 'vite';
 
 export default defineConfig(({mode}) => {
-  const env = loadEnv(mode, '.', '');
+  const env = loadEnv(mode, path.resolve(__dirname, '..'), ''); // Search env in root
   return {
     plugins: [react(), tailwindcss()],
-    root: 'frontend',
+    root: __dirname,
     build: {
       outDir: '../dist',
       emptyOutDir: true,

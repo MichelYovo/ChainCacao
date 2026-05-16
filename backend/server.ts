@@ -4,6 +4,7 @@ import cors from 'cors';
 import { fileURLToPath } from 'url';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import fs from 'fs';
 
 dotenv.config();
 
@@ -291,15 +292,34 @@ async function startServer() {
       res.sendFile(path.join(distPath, 'index.html'));
     });
   } else if (!isProd && !process.env.VERCEL) {
-// Local Dev / AIS
+    // Local Dev / AIS
     const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
       root: path.resolve(__dirname, '../frontend'),
-      configFile: path.resolve(__dirname, '../frontend/vite.config.ts'),
       server: { middlewareMode: true },
       appType: 'spa',
     });
+    
     app.use(vite.middlewares);
+
+    // Serve transformed index.html for all non-API routes
+    app.get('*', async (req, res, next) => {
+      const url = req.originalUrl;
+      const htmlPath = path.resolve(__dirname, '../frontend/index.html');
+      
+      if (!fs.existsSync(htmlPath)) {
+        return res.status(404).send('Frontend balance non trouvée. Vérifiez le dossier /frontend');
+      }
+
+      try {
+        let template = fs.readFileSync(htmlPath, 'utf-8');
+        template = await vite.transformIndexHtml(url, template);
+        res.status(200).set({ 'Content-Type': 'text/html' }).end(template);
+      } catch (e) {
+        vite.ssrFixStacktrace(e as Error);
+        next(e);
+      }
+    });
   }
 
   const server = app.listen(PORT, '0.0.0.0', () => {

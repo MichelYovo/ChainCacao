@@ -24,8 +24,9 @@ Copiez le fichier d'exemple et configurez vos clés :
 cp .env.example .env
 ```
 Éditez le fichier `.env` :
-- `PRIVATE_KEY` : Votre clé privée MetaMask (pour déployer sur Polygon).
-- `JWT_SECRET` : Une phrase secrète pour sécuriser les connexions.
+- `PRIVATE_KEY` : Allez sur **MetaMask** > Détails du compte > **Exporter la clé privée**. (Ne partagez jamais cette clé !).
+- `JWT_SECRET` : Tapez n'importe quelle phrase longue et complexe (ex: `ma_super_cle_secrete_2026_chaincacao`).
+- `CONTRACT_ADDRESS` : Laissez vide jusqu'au déploiement de la blockchain.
 
 ---
 
@@ -45,6 +46,12 @@ Si vous voyez cette erreur :
   1. Ouvrez `PowerShell` en tant qu'administrateur.
   2. Tapez : `Stop-Process -Id (Get-NetTCPConnection -LocalPort 3000).OwningProcess -Force`
 - Ou redémarrez simplement votre PC.
+
+### ⚠️ Erreur "Failed to load url /src/main.tsx" ?
+Cela arrive si vous lancez la commande dans le mauvais dossier.
+- Assurez-vous d'être à la **RACINE** du projet (dossier `ChainCacao`).
+- Le terminal doit afficher `PS C:\...\ChainCacao>`.
+- Tapez `npm run dev`.
 
 ---
 
