@@ -1,2 +1,2 @@
-export * from './auth-context';
-export * from './protected-route';
+export { AuthProvider, useAuth } from './AuthContext';
+export { ProtectedRoute } from './ProtectedRoute';
