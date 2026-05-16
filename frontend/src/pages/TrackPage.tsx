@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { api } from '../services/api';
 import { Lot } from '../types';
-import { GlassCard } from '../components/UI/GlassCard';
+import { GlassCard } from '../components/ui/glass-card';
 import { 
   Search, 
   MapPin, 
@@ -24,7 +24,7 @@ import { QRCodeCanvas } from 'qrcode.react';
 import { jsPDF } from 'jspdf';
 import { toPng } from 'html-to-image';
 
-import { Logo } from '../components/Logo';
+import { Logo } from '../components/ui/logo';
 
 export const TrackPage: React.FC = () => {
   const [searchParams] = useSearchParams();

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../components/Auth/AuthContext';
+import { useAuth } from '../components/auth/auth-context';
 import { motion } from 'motion/react';
 import { 
   Sprout, 
@@ -25,7 +25,7 @@ const ACTORS = [
   { id: "MIN-AGRIC-01", role: "Ministère", name: "Min. Agriculture", icon: Landmark, color: "text-cafe-profondeur", bg: "bg-cafe-profondeur/10" }
 ];
 
-import { Logo } from '../components/Logo';
+import { Logo } from '../components/ui/logo';
 
 export const LoginPage: React.FC = () => {
   const [identifier, setIdentifier] = useState('');

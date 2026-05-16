@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../components/Auth/AuthContext';
+import { useAuth } from '../components/auth/auth-context';
 import { api } from '../services/api';
 import { Lot, Stats } from '../types';
-import { GlassCard } from '../components/UI/GlassCard';
-import { StatCard } from '../components/UI/StatCard';
+import { GlassCard } from '../components/ui/glass-card';
+import { StatCard } from '../components/ui/stat-card';
 import { 
   Package, 
   Search, 
@@ -28,7 +28,7 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { QRCodeCanvas } from 'qrcode.react';
 
-import { Logo } from '../components/Logo';
+import { Logo } from '../components/ui/logo';
 
 export const Dashboard: React.FC = () => {
   const { user } = useAuth();
