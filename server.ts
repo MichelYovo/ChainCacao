@@ -296,10 +296,9 @@ app.use((err: any, req: any, res: any, next: any) => {
 
 async function startServer() {
   // --- VITE / STATIC SERVING ---
-  const isProd = process.env.NODE_ENV === 'production' || !!process.env.VERCEL || fs.existsSync(path.join(DIRNAME, 'index.html'));
+  const isProd = process.env.NODE_ENV === 'production' || fs.existsSync(path.join(DIRNAME, 'index.html'));
 
   if (isProd) {
-    // In production (or if index.html exists in the same dir as the bundle), serve static files
     const distPath = DIRNAME;
     app.use(express.static(distPath));
     app.get('*', (req, res, next) => {
@@ -310,20 +309,19 @@ async function startServer() {
     // Local Dev / AIS
     const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
-      root: path.resolve(DIRNAME, '../frontend'),
+      root: path.resolve(DIRNAME, 'frontend'),
       server: { middlewareMode: true },
       appType: 'spa',
     });
     
     app.use(vite.middlewares);
 
-    // Serve transformed index.html for all non-API routes
     app.get('*', async (req, res, next) => {
       const url = req.originalUrl;
-      const htmlPath = path.resolve(DIRNAME, '../frontend/index.html');
+      const htmlPath = path.resolve(DIRNAME, 'frontend/index.html');
       
       if (!fs.existsSync(htmlPath)) {
-        return res.status(404).send('Frontend balance non trouvée. Vérifiez le dossier /frontend');
+        return res.status(404).send('Frontend not found. Check the /frontend folder.');
       }
 
       try {
@@ -337,11 +335,9 @@ async function startServer() {
     });
   }
 
-  if (!process.env.VERCEL) {
-    app.listen(PORT, '0.0.0.0', () => {
-      console.log(`ChainCacao Server running on http://localhost:${PORT}`);
-    });
-  }
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`ChainCacao Server running on port ${PORT}`);
+  });
 }
 
 startServer();
