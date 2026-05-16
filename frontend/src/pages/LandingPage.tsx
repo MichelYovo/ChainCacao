@@ -41,21 +41,56 @@ export const LandingPage: React.FC = () => {
                 onClick={() => navigate('/register')}
                 className="px-8 py-5 bg-cafe-profondeur text-white rounded-[24px] font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 hover:scale-105 transition-all shadow-2xl shadow-cafe-profondeur/30 flex-1 sm:flex-none"
               >
-                Commencer maintenant
+                Créer un compte
                 <ArrowRight size={18} className="text-cacao-dore" />
               </button>
               <button
                 onClick={() => navigate('/login')}
                 className="px-8 py-5 glass bg-white/50 text-cafe-profondeur rounded-[24px] font-black uppercase tracking-widest text-xs flex items-center justify-center border border-cacao-dore/10 hover:bg-white transition-all shadow-lg flex-1 sm:flex-none"
               >
-                Se connecter
+                Accès Registre
               </button>
+            </div>
+
+            <div className="flex flex-wrap gap-3">
               <button
                 onClick={() => navigate('/mobile')}
-                className="px-8 py-5 bg-cacao-vert text-white rounded-[24px] font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 hover:scale-105 transition-all shadow-xl shadow-cacao-vert/20 w-full sm:w-auto"
+                className="px-6 py-4 bg-cacao-vert text-white rounded-[24px] font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 hover:scale-105 transition-all shadow-xl shadow-cacao-vert/20"
               >
-                <Smartphone size={18} />
-                Installer App Mobile
+                <Smartphone size={16} />
+                App Mobile
+              </button>
+              <button
+                onClick={() => {
+                  const pitch = `
+                  PITCH CHAINCACAO (10 MIN)
+                  
+                  1. LE PROBLÈME (2 min)
+                  - Réglementation EUDR (2026) : Pas de GPS, pas d'exportation vers l'UE.
+                  - Opacité de la filière et déconnexion producteurs/marché.
+
+                  2. SOLUTION (2 min)
+                  - Registre immuable sur Polygon Blockchain.
+                  - Passeport Digital pour chaque lot de cacao.
+
+                  3. DÉMONSTRATION (3 min)
+                  - Agriculteur : Capture GPS & Certificat Digital.
+                  - Coopérative : Validation EUDR par satellite.
+                  - Acheteur : Traçabilité totale "Bean to Bar".
+
+                  4. IMPACT (2 min)
+                  - Zéro déforestation, transparence géo-spatiale.
+                  - Valorisation du prix au producteur.
+
+                  5. CONCLUSION (1 min)
+                  - Le bouclier digital de l'excellence togolaise.
+                  `;
+                  alert(pitch);
+                }}
+                className="px-6 py-4 glass bg-cacao-dore/10 text-cafe-profondeur border-cacao-dore/20 rounded-[24px] font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 hover:bg-cacao-dore/20 transition-all"
+              >
+                <Zap size={16} className="text-cacao-dore" />
+                Pitch 10 min
               </button>
             </div>
 
