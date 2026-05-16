@@ -294,6 +294,7 @@ async function startServer() {
 // Local Dev / AIS
     const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
+      root: path.resolve(__dirname, '../frontend'),
       configFile: path.resolve(__dirname, '../frontend/vite.config.ts'),
       server: { middlewareMode: true },
       appType: 'spa',

@@ -32,20 +32,19 @@ cp .env.example .env
 ## 🛠️ Utilisation et Commandes
 
 ### 🌐 Lancer le Web + API (Simultané)
-**Important :** Vous ne devez ouvrir qu'UN SEUL terminal pour cette commande.
+**Important :** Vous ne devez ouvrir qu'UN SEUL terminal à la racine pour cette commande.
 ```bash
 # À la racine du projet
 npm run dev
 ```
-Accès local : [http://localhost:3000](http://localhost:3000)
+Accès local : [http://localhost:3000](http://localhost:3000) (N'utilisez pas l'adresse 0.0.0.0)
 
 ### ⚠️ Erreur "Port 3000 is already in use" ?
-Si vous voyez cette erreur, cela signifie qu'un serveur tourne déjà. 
-- Fermez tous vos terminaux VS Code.
-- Sur Windows, si ça persiste :
-  1. Ouvrez `cmd` en admin.
-  2. Tapez : `netstat -ano | findstr :3000`
-  3. Tapez : `taskkill /F /PID <LE_NUMERO_A_DROITE>`
+Si vous voyez cette erreur :
+- Sur Windows : 
+  1. Ouvrez `PowerShell` en tant qu'administrateur.
+  2. Tapez : `Stop-Process -Id (Get-NetTCPConnection -LocalPort 3000).OwningProcess -Force`
+- Ou redémarrez simplement votre PC.
 
 ---
 
