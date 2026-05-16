@@ -25,7 +25,7 @@ const ACTORS = [
   { id: "MIN-AGRIC-01", role: "Ministère", name: "Min. Agriculture", icon: Landmark, color: "text-cafe-profondeur", bg: "bg-cafe-profondeur/10" }
 ];
 
-import { Logo } from '@/components/ui/logo';
+import { Logo } from '@/components/ui/Logo';
 
 export const LoginPage: React.FC = () => {
   const [identifier, setIdentifier] = useState('');

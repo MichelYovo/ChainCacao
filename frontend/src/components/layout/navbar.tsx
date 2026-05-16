@@ -4,7 +4,7 @@ import { useAuth } from '@/components/security';
 import { Sprout, LogOut, Search, LayoutDashboard, Bell } from 'lucide-react';
 import { motion } from 'motion/react';
 
-import { Logo } from '@/components/ui/logo';
+import { Logo } from '@/components/ui/Logo';
 
 export const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
