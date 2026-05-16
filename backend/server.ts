@@ -286,7 +286,7 @@ async function startServer() {
 
   if (isProd && !process.env.VERCEL) {
     // Only serve static files via Express if NOT on Vercel (e.g. self-hosted node server)
-    const distPath = path.resolve(__dirname, '../dist');
+    const distPath = path.resolve(process.cwd(), 'dist');
     app.use(express.static(distPath));
     app.get('*', (req, res, next) => {
       if (req.path.startsWith('/api/')) return next();
