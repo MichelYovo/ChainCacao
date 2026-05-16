@@ -41,8 +41,7 @@ export const Navbar: React.FC = () => {
                   Registre
                 </Link>
                 <div className="h-4 w-px bg-white/10" />
-                <div className="flex items-center gap-3 px-4 py-2 bg-white/5 border border-white/5 rounded-full overflow-hidden">
-                  <div className={`w-2 h-2 rounded-full ${isOffline ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]' : 'bg-cacao-vert shadow-[0_0_8px_rgba(45,90,39,0.8)]'}`} />
+                <div className="flex items-center gap-3">
                   <span className="text-[9px] font-bold text-white uppercase tracking-widest">{user.name}</span>
                 </div>
               </div>
@@ -52,18 +51,6 @@ export const Navbar: React.FC = () => {
 
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-4">
-            {isOffline ? (
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-red-500/10 border border-red-500/20 rounded-lg">
-                <WifiOff size={14} className="text-red-500" />
-                <span className="text-[9px] font-black uppercase tracking-widest text-red-500 hidden sm:block">Hors Connexion</span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-cacao-vert/10 border border-cacao-vert/20 rounded-lg">
-                <Wifi size={14} className="text-cacao-vert" />
-                <span className="text-[9px] font-black uppercase tracking-widest text-cacao-vert hidden sm:block">Connecté</span>
-              </div>
-            )}
-            
             {user ? (
               <>
                 <div className="text-right hidden sm:block">
@@ -80,8 +67,7 @@ export const Navbar: React.FC = () => {
               </>
             ) : (
             <div className="flex items-center gap-4">
-              <Link to="/login" className="text-[10px] font-black uppercase tracking-widest text-cafe-clair hover:text-white transition-colors">Connexion</Link>
-              <Link to="/register" className="px-6 py-2.5 bg-cacao-vert text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-cacao-vert/20">S'inscrire</Link>
+              <Link to="/login" className="px-6 py-2.5 bg-cacao-vert text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-cacao-vert/20">Connexion</Link>
             </div>
           )}
         </div>

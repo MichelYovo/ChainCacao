@@ -277,10 +277,34 @@ app.get('/api/cacao/stats', authenticateToken, (req, res) => {
   });
 });
 
+const isProd = process.env.NODE_ENV === 'production' || !!process.env.VERCEL;
+const distPath = isProd ? path.join(process.cwd(), 'dist') : path.join(DIRNAME, 'frontend');
+
+if (isProd) {
+  console.log(`Configuring static files from: ${distPath}`);
+  app.use(express.static(distPath, {
+    maxAge: '1d',
+    index: 'index.html'
+  }));
+}
+
 // API 404 handler
 app.use('/api/*', (req, res) => {
   res.status(404).json({ message: `API route not found: ${req.originalUrl}` });
 });
+
+// SPA Fallback for production
+if (isProd) {
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api/')) return next();
+    const indexPath = path.join(distPath, 'index.html');
+    if (fs.existsSync(indexPath)) {
+      res.sendFile(indexPath);
+    } else {
+      res.status(404).send('Frontend build not found. Path: ' + indexPath);
+    }
+  });
+}
 
 // Global Error Handler
 app.use((err: any, req: any, res: any, next: any) => {
@@ -295,29 +319,7 @@ app.use((err: any, req: any, res: any, next: any) => {
 });
 
 async function startServer() {
-  // --- VITE / STATIC SERVING ---
-  const isProd = process.env.NODE_ENV === 'production' || !!process.env.VERCEL;
-  const distPath = process.env.VERCEL 
-    ? path.join(process.cwd(), 'dist') 
-    : (isProd ? DIRNAME : path.join(DIRNAME, 'frontend'));
-
-  if (isProd) {
-    console.log(`Serving static files from: ${distPath}`);
-    app.use(express.static(distPath, {
-      maxAge: '1d',
-      index: 'index.html'
-    }));
-    
-    app.get('*', (req, res, next) => {
-      if (req.path.startsWith('/api/')) return next();
-      const indexPath = path.join(distPath, 'index.html');
-      if (fs.existsSync(indexPath)) {
-        res.sendFile(indexPath);
-      } else {
-        res.status(404).send('Frontend build not found. Path: ' + indexPath);
-      }
-    });
-  } else {
+  if (!isProd) {
     // Local Dev / AIS
     const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({

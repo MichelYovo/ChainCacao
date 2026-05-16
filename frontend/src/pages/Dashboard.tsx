@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/components/security';
 import { api } from '@/services/api';
-import { Lot, Stats } from '@/types';
+import { Lot } from '@/types';
 import { GlassCard } from '@/components/ui/GlassCard';
-import { StatCard } from '@/components/ui/StatCard';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useOffline } from '@/hooks/useOffline';
 import { 
@@ -45,7 +44,6 @@ export const Dashboard: React.FC = () => {
     staleTime: 5000,
   });
 
-  const stats = data?.stats as Stats | null;
   const lots = (data?.lots || []) as Lot[];
   const notifications = (data?.notifications || []) as any[];
   const usersList = (data?.users || []) as any[];
@@ -56,7 +54,6 @@ export const Dashboard: React.FC = () => {
   const [showPhotoChoice, setShowPhotoChoice] = useState(false);
   const [isAdminCreating, setIsAdminCreating] = useState(false);
   const [newUserAccount, setNewUserAccount] = useState({ name: '', email: '', password: '', role: 'Agriculteur', phone: '' });
-  const [adminTab, setAdminTab] = useState<'lots' | 'users'>('lots');
 
   const createUserMutation = useMutation({
     mutationFn: (userData: any) => api.createUser(userData),
@@ -140,24 +137,6 @@ export const Dashboard: React.FC = () => {
     }
   };
 
-  const getRoleStats = () => {
-    if (user?.role === 'Agriculteur') {
-      const myLots = lots.filter(l => l.producerId === user.id);
-      return [
-        { title: "Mes Lots", value: myLots.length, icon: Package, color: "bg-cacao-vert" },
-        { title: "Poids Total", value: `${myLots.reduce((acc, l) => acc + l.quantity, 0)} kg`, icon: Globe, color: "bg-cafe-moyen" },
-        { title: "Certifiés", value: myLots.filter(l => l.status >= 1).length, icon: ShieldCheck, color: "bg-cacao-vert-clair" },
-        { title: "En attente", value: myLots.filter(l => l.status === 0).length, icon: Clock, color: "bg-cacao-dore" }
-      ];
-    }
-    return [
-      { title: "Lots Système", value: stats?.totalLots || 0, icon: Package, color: "bg-cacao-vert" },
-      { title: "Volume National", value: `${(stats?.totalQuantity || 0).toLocaleString()} kg`, icon: Globe, color: "bg-cafe-moyen" },
-      { title: "Transports Actifs", value: stats?.activeTransports || 0, icon: Truck, color: "bg-cacao-dore" },
-      { title: "Taux Conformité", value: "98.5%", icon: ShieldCheck, color: "bg-cacao-vert-clair" }
-    ];
-  };
-
   if (isLoading && !data) return (
     <div className="min-h-screen flex items-center justify-center bg-creme">
       <div className="text-center space-y-4">
@@ -188,28 +167,12 @@ export const Dashboard: React.FC = () => {
               Console <span className="text-cafe-profondeur">Régistre</span>
             </h1>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="flex -space-x-2">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="w-6 h-6 rounded-full border-2 border-creme bg-cacao-vert flex items-center justify-center">
-                  <ShieldCheck size={10} className="text-white" />
-                </div>
-              ))}
-            </div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-cacao-vert/60">Contrôle Multi-Signature Actif</p>
-          </div>
           <p className="text-cafe-moyen font-medium text-lg leading-tight">
             Connecté en tant que <span className="font-bold text-cafe-profondeur underline decoration-cacao-dore/40 decoration-4">{user?.name}</span>
           </p>
         </div>
 
         <div className="flex gap-3">
-          <div className="flex items-center gap-2 px-4 py-2 bg-creme-sombre/30 rounded-xl">
-             <div className={`w-2 h-2 rounded-full ${isOffline ? 'bg-red-500 animate-pulse' : 'bg-cacao-vert'}`} />
-             <span className="text-[10px] font-black uppercase tracking-widest text-cafe-moyen">
-               {isOffline ? 'Mode Hors Ligne' : 'Synchronisé'}
-             </span>
-          </div>
           {user?.role === 'Agriculteur' && (
             <button 
               onClick={() => setShowAddForm(true)}
@@ -218,18 +181,10 @@ export const Dashboard: React.FC = () => {
               <Plus size={16} /> Enregistrer Récolte
             </button>
           )}
-          <button className="px-6 py-4 bg-white border border-cacao-dore/20 text-cafe-profondeur rounded-2xl font-black text-[10px] uppercase tracking-widest">
-            Audit Blockchain
-          </button>
         </div>
       </div>
 
-      {/* Role Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {getRoleStats().map((stat, i) => (
-          <StatCard key={i} title={stat.title} value={stat.value.toString()} icon={stat.icon} colorClass={stat.color} />
-        ))}
-      </div>
+      {/* Role Sections Removed */}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Main Work Area */}
@@ -238,12 +193,9 @@ export const Dashboard: React.FC = () => {
           {/* Action Zone: ROLE SPECIFIC */}
           {user?.role === 'Agriculteur' && (
             <GlassCard className="p-8 bg-creme/30 border-cacao-dore/10">
-              <div className="flex items-start justify-between gap-6">
-                <div className="space-y-2">
-                  <h3 className="text-2xl font-black italic">Vos Récoltes Actives</h3>
-                  <p className="text-cafe-moyen text-sm font-medium">Récupérez vos QR codes et suivez la validation.</p>
-                </div>
-                <Logo size={64} className="opacity-20" />
+              <div className="space-y-2">
+                <h3 className="text-2xl font-black italic">Vos Récoltes Actives</h3>
+                <p className="text-cafe-moyen text-sm font-medium">Récupérez vos QR codes et suivez la validation.</p>
               </div>
               <div className="mt-8 space-y-4">
                 {lots.filter(l => l.producerId === user.id).slice(0, 3).map(lot => (
@@ -297,14 +249,8 @@ export const Dashboard: React.FC = () => {
                           <p className="text-xs text-creme/60 font-mono italic">{lot.gps}</p>
                         </div>
                       </div>
-                      <div className="flex gap-3">
-                        <button 
-                          onClick={() => transitionMutation.mutate({ id: lot.id, data: { status: 1, label: "Certifié par Coopérative", nextRole: "Transporteur" } })}
-                          className="px-6 py-3 bg-cacao-vert text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-transform"
-                        >
-                          Certifier EUDR
-                        </button>
-                        <button className="px-6 py-3 bg-red-500/80 text-white rounded-xl text-[10px] font-black uppercase tracking-widest">Rejeter</button>
+                      <div className="px-6 py-3 bg-white/10 text-white rounded-xl text-[10px] font-black uppercase tracking-widest">
+                        En Attente
                       </div>
                     </div>
                   ))
@@ -326,13 +272,7 @@ export const Dashboard: React.FC = () => {
                       <span className="text-[10px] font-black uppercase bg-orange-50 text-orange-600 px-3 py-1 rounded-full">Prêt pour transit</span>
                     </div>
                     <h4 className="font-display font-bold text-xl mb-1">{lot.id}</h4>
-                    <p className="text-cafe-clair text-xs font-bold uppercase tracking-widest mb-6">Chargement: {lot.origin}</p>
-                    <button 
-                      onClick={() => transitionMutation.mutate({ id: lot.id, data: { status: 2, label: "En Transit Logistique", nextRole: "Exportateur" } })}
-                      className="w-full py-4 bg-cafe-profondeur text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-cafe-moyen transition-colors"
-                    >
-                      Démarrer Livraison
-                    </button>
+                    <p className="text-cafe-clair text-xs font-bold uppercase tracking-widest">Chargement: {lot.origin}</p>
                   </div>
                 ))}
               </div>
@@ -349,12 +289,9 @@ export const Dashboard: React.FC = () => {
                       <p className="text-lg font-bold">Lot {lot.id}</p>
                       <p className="text-xs font-black uppercase tracking-widest opacity-60">Arrivée prévue au Port de Lomé</p>
                     </div>
-                    <button 
-                      onClick={() => transitionMutation.mutate({ id: lot.id, data: { status: 3, label: "Reçu par l'Exportateur", nextRole: "Acheteur EU" } })}
-                      className="px-8 py-4 bg-cafe-profondeur text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-transform"
-                    >
-                      Confirmer Réception
-                    </button>
+                    <div className="px-8 py-4 bg-cafe-profondeur/10 text-cafe-profondeur rounded-2xl font-black text-[10px] uppercase tracking-widest">
+                      En Approche
+                    </div>
                   </div>
                 ))}
               </div>
@@ -369,14 +306,11 @@ export const Dashboard: React.FC = () => {
                   <div key={lot.id} className="p-6 bg-white/10 rounded-3xl border border-white/20 flex justify-between items-center">
                     <div>
                       <p className="text-lg font-bold">Lot {lot.id}</p>
-                      <p className="text-xs font-black uppercase tracking-widest opacity-60">Chargé au Port de Lomé • En mer</p>
+                      <p className="text-xs font-black uppercase tracking-widest opacity-60">En mer • Arrivée EU</p>
                     </div>
-                    <button 
-                      onClick={() => transitionMutation.mutate({ id: lot.id, data: { status: 4, label: "Livraison Confirmée EU", nextRole: null as any } })}
-                      className="px-8 py-4 bg-white text-blue-600 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-transform"
-                    >
-                      Confirmer Réception
-                    </button>
+                    <div className="px-8 py-4 bg-white/10 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest">
+                      En Transit
+                    </div>
                   </div>
                 ))}
               </div>
@@ -385,101 +319,19 @@ export const Dashboard: React.FC = () => {
 
           {user?.role === 'Administrateur' && (
             <div className="space-y-8">
-              <div className="flex items-center gap-4 bg-white/40 p-1.5 rounded-2xl border border-cacao-dore/5 w-fit">
-                <button 
-                  onClick={() => setAdminTab('lots')}
-                  className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${adminTab === 'lots' ? 'bg-cafe-profondeur text-white shadow-lg' : 'text-cafe-moyen hover:bg-white/50'}`}
-                >
-                  Suivi des Lots
-                </button>
-                <button 
-                  onClick={() => setAdminTab('users')}
-                  className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${adminTab === 'users' ? 'bg-cafe-profondeur text-white shadow-lg' : 'text-cafe-moyen hover:bg-white/50'}`}
-                >
-                  Comptes Système
-                </button>
+              <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-3xl font-black italic text-cafe-profondeur">Flux de Production</h3>
+                </div>
+                {/* The global activity table below will show the lots */}
               </div>
-
-              {adminTab === 'lots' ? (
-                <div className="space-y-6">
-                  <div className="flex justify-between items-center">
-                    <h3 className="text-3xl font-black italic text-cafe-profondeur">Flux de Production</h3>
-                  </div>
-                  {/* The global activity table below will show the lots */}
-                </div>
-              ) : (
-                <div className="space-y-8">
-                  <div className="flex justify-between items-center">
-                    <h3 className="text-3xl font-black italic text-cafe-profondeur">Gestion des Acteurs</h3>
-                    <button 
-                      onClick={() => setIsAdminCreating(true)}
-                      className="px-6 py-3 bg-cafe-profondeur text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all"
-                    >
-                      Ajouter Acteur
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {usersList.map((u: any) => (
-                      <GlassCard key={u.id} className="p-6 space-y-4 border-cacao-dore/10">
-                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 rounded-2xl bg-cafe-profondeur/5 flex items-center justify-center text-cafe-profondeur">
-                            <Users size={24} />
-                          </div>
-                          <div>
-                            <h4 className="font-bold text-lg leading-none">{u.name}</h4>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-cacao-vert mt-1">{u.role}</p>
-                          </div>
-                        </div>
-                        <div className="space-y-1 text-xs">
-                          <p className="flex justify-between text-cafe-moyen"><span>ID:</span> <span className="font-mono font-bold text-cafe-profondeur">{u.id}</span></p>
-                          <p className="flex justify-between text-cafe-moyen"><span>Email:</span> <span className="font-bold text-cafe-profondeur text-right truncate ml-4">{u.email}</span></p>
-                        </div>
-                      </GlassCard>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {user?.role === 'Ministère' && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <GlassCard className="p-6 bg-white border-l-4 border-l-cacao-vert">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-cafe-clair">Production Nationale</p>
-                  <p className="text-3xl font-bold text-cafe-profondeur">184,200 <span className="text-xs">kg</span></p>
-                </GlassCard>
-                <GlassCard className="p-6 bg-white border-l-4 border-l-cacao-dore">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-cafe-clair">Producteurs Actifs</p>
-                  <p className="text-3xl font-bold text-cafe-profondeur">1,450</p>
-                </GlassCard>
-                <GlassCard className="p-6 bg-white border-l-4 border-l-cafe-moyen">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-cafe-clair">Audits EUDR</p>
-                  <p className="text-3xl font-bold text-cafe-profondeur">98% <span className="text-xs text-green-500">Conforme</span></p>
-                </GlassCard>
-              </div>
-
-              <GlassCard className="p-8 bg-cafe-profondeur text-white min-h-[300px] flex flex-col justify-center items-center text-center overflow-hidden relative">
-                <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
-                <div className="relative z-10 space-y-4">
-                  <Globe size={64} className="mx-auto text-cacao-dore animate-pulse" />
-                  <h3 className="text-2xl font-bold tracking-tight">Carte Interactive de la Filière</h3>
-                  <p className="text-cafe-clair max-w-md mx-auto text-sm">Visualisation géo-spatiale des parcelles certifiées sur l'ensemble du territoire togolais. Données satellites Sentinel-2 synchronisées.</p>
-                  <button className="px-6 py-3 bg-cacao-dore text-cafe-profondeur rounded-xl text-[10px] font-black uppercase tracking-widest">Activer Vue Satellite</button>
-                </div>
-              </GlassCard>
             </div>
           )}
 
           {/* Unified Global Activity Table */}
           <div className="glass border-cacao-dore/10 overflow-hidden">
             <div className="p-6 border-b border-cacao-dore/10 flex justify-between items-center bg-white/60">
-              <h4 className="font-display font-bold text-xl italic uppercase tracking-tighter">Journal du Registre</h4>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-cafe-clair">Live PolySync</span>
-              </div>
+              <h4 className="font-display font-bold text-xl italic uppercase tracking-tighter">Historique des Lots</h4>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left">
@@ -536,9 +388,6 @@ export const Dashboard: React.FC = () => {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-2xl font-black italic tracking-tighter">Alertes Systèmes</h3>
-              {notifications.some(n => !n.read) && (
-                <button onClick={() => markReadMutation.mutate()} className="text-[9px] font-black uppercase tracking-widest text-cacao-vert hover:underline underline-offset-4">Tout marquer lu</button>
-              )}
             </div>
             <div className="space-y-3">
               {notifications.filter(n => n.toRole === user?.role).length === 0 ? (
@@ -567,50 +416,6 @@ export const Dashboard: React.FC = () => {
                 ))
               )}
             </div>
-          </div>
-
-          {/* Network Stats */}
-          <GlassCard className="bg-cafe-profondeur text-creme border-none overflow-hidden group">
-            <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:rotate-12 transition-transform">
-              <Globe size={120} />
-            </div>
-            <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-cacao-dore mb-6">Métriques Globales</h4>
-            <div className="space-y-6 relative z-10">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-3xl font-display font-bold text-white tracking-tighter">98.5%</p>
-                  <p className="text-[9px] font-black uppercase tracking-widest text-cafe-clair mt-1">Score Conformité EUDR</p>
-                </div>
-                <ShieldCheck className="text-cacao-vert" />
-              </div>
-              <div className="space-y-2">
-                <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-cafe-clair">
-                  <span>Transactions Polygon</span>
-                  <span className="text-white">Active</span>
-                </div>
-                <div className="h-1 bg-white/10 rounded-full overflow-hidden">
-                  <motion.div 
-                    initial={{ width: 0 }}
-                    animate={{ width: "92%" }}
-                    transition={{ duration: 1.5 }}
-                    className="h-full bg-cacao-vert shadow-[0_0_8px_rgba(45,90,39,1)]" 
-                  />
-                </div>
-              </div>
-              <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                <p className="text-[9px] font-mono text-cafe-clair break-all">Last_TX: 0x8a92e100...44cb1</p>
-              </div>
-            </div>
-          </GlassCard>
-
-          {/* Quick Info */}
-          <div className="p-8 glass bg-cacao-vert/5 border-cacao-vert/20 text-center space-y-4">
-            <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto shadow-lg">
-              <Package className="text-cacao-vert" />
-            </div>
-            <h5 className="font-bold text-cafe-profondeur uppercase tracking-tighter text-xl italic">Soutien Technique</h5>
-            <p className="text-xs text-cafe-moyen leading-relaxed font-medium">Besoin d'aide pour l'enregistrement GPS ? Contactez le bureau d'appui de <b>Kpalimé</b>.</p>
-            <button className="text-[10px] font-black uppercase tracking-widest text-cacao-vert hover:underline decoration-2">Lancer support live</button>
           </div>
         </div>
       </div>
