@@ -1,11 +1,6 @@
 {
   "version": 2,
-  "cleanUrls": true,
-  "trailingSlash": false,
-  "routes": [
-    { "src": "/api/(.*)", "dest": "/api/index.ts" },
-    { "src": "/assets/(.*)", "dest": "/dist/assets/$1", "check": true },
-    { "src": "/(.*)", "dest": "/dist/$1", "check": true },
-    { "src": "/(.*)", "dest": "/dist/index.html" }
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/api" }
   ]
 }
