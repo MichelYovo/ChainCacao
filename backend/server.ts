@@ -78,223 +78,223 @@ let NOTIFICATIONS = [
 const app = express();
 const PORT = 3000;
 
-async function startServer() {
-  app.use(express.json({ limit: '10mb' }));
-  app.use(express.urlencoded({ limit: '10mb', extended: true }));
-  app.use(cors());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
+app.use(cors());
 
-  // Health Check
-  app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+// Health Check
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// --- API ROUTES ---
+
+// Auth Middleware
+const authenticateToken = (req: any, res: any, next: any) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (!token) return res.status(401).json({ message: "Non authentifié" });
+
+  jwt.verify(token, JWT_SECRET, (err: any, user: any) => {
+    if (err) return res.status(403).json({ message: "Session expirée" });
+    req.user = user;
+    next();
   });
+};
 
-  // --- API ROUTES ---
+app.post('/api/auth/login', (req, res) => {
+  const { identifier, password } = req.body;
+  const cleanId = String(identifier || '').trim();
+  console.log(`Login attempt for: ${cleanId}`);
+  const actor = ACTORS.find(a => (a.email === cleanId || a.id === cleanId) && a.password === password);
 
-  // Auth Middleware
-  const authenticateToken = (req: any, res: any, next: any) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-    if (!token) return res.status(401).json({ message: "Non authentifié" });
+  if (actor) {
+    console.log(`Login success for: ${actor.name} (${actor.role})`);
+    const token = jwt.sign({ 
+      id: actor.id, 
+      email: actor.email, 
+      role: actor.role, 
+      name: actor.name,
+      color: actor.color 
+    }, JWT_SECRET);
+    res.json({ token, user: { id: actor.id, email: actor.email, role: actor.role, name: actor.name, color: actor.color } });
+  } else {
+    console.log(`Login failed for: ${identifier}`);
+    res.status(401).json({ message: "Identifiant ou mot de passe incorrect" });
+  }
+});
 
-    jwt.verify(token, JWT_SECRET, (err: any, user: any) => {
-      if (err) return res.status(403).json({ message: "Session expirée" });
-      req.user = user;
-      next();
-    });
+// Combined endpoint for dashboard fluidity
+app.get('/api/dashboard/init', authenticateToken, (req: any, res) => {
+  const stats = {
+    totalLots: lotHistory.length,
+    totalQuantity: lotHistory.reduce((acc, lot) => acc + lot.quantity, 0),
+    activeTransports: lotHistory.filter(l => l.status === 2).length,
+    certifiedLots: lotHistory.filter(l => l.status >= 1).length,
+    eudrComplianceScore: 98.5,
+    regionalDistribution: [
+      { region: "Plateaux", cases: 45 },
+      { region: "Centrale", cases: 22 },
+      { region: "Kara", cases: 12 }
+    ]
   };
+  const notifications = NOTIFICATIONS.filter(n => n.toRole === req.user.role);
+  const lots = lotHistory;
+  const usersData = req.user.role === 'Administrateur' ? ACTORS : null;
+  
+  res.json({ stats, notifications, lots, users: usersData });
+});
 
-  app.post('/api/auth/login', (req, res) => {
-    const { identifier, password } = req.body;
-    const cleanId = String(identifier || '').trim();
-    console.log(`Login attempt for: ${cleanId}`);
-    const actor = ACTORS.find(a => (a.email === cleanId || a.id === cleanId) && a.password === password);
+// Admin: Get all users
+app.get('/api/admin/users', authenticateToken, (req: any, res) => {
+  if (req.user.role !== 'Administrateur') return res.sendStatus(403);
+  res.json(ACTORS);
+});
 
-    if (actor) {
-      console.log(`Login success for: ${actor.name} (${actor.role})`);
-      const token = jwt.sign({ 
-        id: actor.id, 
-        email: actor.email, 
-        role: actor.role, 
-        name: actor.name,
-        color: actor.color 
-      }, JWT_SECRET);
-      res.json({ token, user: { id: actor.id, email: actor.email, role: actor.role, name: actor.name, color: actor.color } });
-    } else {
-      console.log(`Login failed for: ${identifier}`);
-      res.status(401).json({ message: "Identifiant ou mot de passe incorrect" });
-    }
+// Admin: Create user
+app.post('/api/admin/users/create', authenticateToken, (req: any, res) => {
+  if (req.user.role !== 'Administrateur') return res.sendStatus(403);
+  const { name, email, password, role, phone, location, zone } = req.body;
+  
+  if (ACTORS.find(a => a.email === email)) {
+    return res.status(400).json({ message: "Email déjà utilisé" });
+  }
+
+  const prefix = role.substring(0, 3).toUpperCase();
+  const newUser = {
+    id: `${prefix}-${Math.floor(1000 + Math.random() * 9000)}`,
+    name, email, password, role, phone, location, zone,
+    color: '#2d5a27'
+  };
+  ACTORS.push(newUser);
+  res.status(201).json(newUser);
+});
+
+app.get('/api/notifications', authenticateToken, (req: any, res) => {
+  const userNotifications = NOTIFICATIONS.filter(n => n.toRole === req.user.role);
+  res.json(userNotifications);
+});
+
+app.post('/api/notifications/read', authenticateToken, (req: any, res) => {
+  NOTIFICATIONS = NOTIFICATIONS.map(n => n.toRole === req.user.role ? { ...n, read: true } : n);
+  res.json({ success: true });
+});
+
+app.get('/api/auth/me', authenticateToken, (req: any, res) => {
+  res.json(req.user);
+});
+
+app.get('/api/cacao/all', authenticateToken, (req, res) => {
+  res.json(lotHistory);
+});
+
+app.get('/api/cacao/trace/:id', authenticateToken, (req, res) => {
+  const lot = lotHistory.find(l => l.id === req.params.id);
+  if (!lot) return res.status(404).json({ message: "Lot non trouvé" });
+  res.json(lot);
+});
+
+app.post('/api/cacao/add', authenticateToken, (req: any, res) => {
+  const { quantity, origin, gps, photos, note } = req.body;
+  const newLot = {
+    id: `LOT-${Math.floor(1000 + Math.random() * 9000)}`,
+    producerId: req.user.id,
+    producerName: req.user.name,
+    quantity,
+    origin,
+    gps,
+    note: note || "",
+    timestamp: new Date().toISOString(),
+    status: 0,
+    photos: photos || [],
+    history: [
+      { 
+        status: 0, 
+        label: "Récolte Enregistrée", 
+        date: new Date().toISOString(), 
+        actor: req.user.name, 
+        hash: `0x${Math.random().toString(16).slice(2, 10)}...` 
+      }
+    ]
+  };
+  lotHistory.unshift(newLot);
+
+  // Notify Cooperative
+  NOTIFICATIONS.unshift({
+    id: Date.now(),
+    toRole: "Coopérative",
+    message: `Nouveau lot récolté par ${req.user.name} (${newLot.id})`,
+    date: new Date().toISOString(),
+    read: false,
+    type: 'info'
   });
 
-  // Combined endpoint for dashboard fluidity
-  app.get('/api/dashboard/init', authenticateToken, (req: any, res) => {
-    const stats = {
-      totalLots: lotHistory.length,
-      totalQuantity: lotHistory.reduce((acc, lot) => acc + lot.quantity, 0),
-      activeTransports: lotHistory.filter(l => l.status === 2).length,
-      certifiedLots: lotHistory.filter(l => l.status >= 1).length,
-      eudrComplianceScore: 98.5,
-      regionalDistribution: [
-        { region: "Plateaux", cases: 45 },
-        { region: "Centrale", cases: 22 },
-        { region: "Kara", cases: 12 }
-      ]
-    };
-    const notifications = NOTIFICATIONS.filter(n => n.toRole === req.user.role);
-    const lots = lotHistory;
-    const usersData = req.user.role === 'Administrateur' ? ACTORS : null;
-    
-    res.json({ stats, notifications, lots, users: usersData });
+  res.status(201).json(newLot);
+});
+
+app.post('/api/cacao/transition/:id', authenticateToken, (req: any, res) => {
+  const { id } = req.params;
+  const { status, label, nextRole } = req.body;
+  
+  const lotIndex = lotHistory.findIndex(l => l.id === id);
+  if (lotIndex === -1) return res.status(404).json({ message: "Lot non trouvé" });
+
+  lotHistory[lotIndex].status = status;
+  lotHistory[lotIndex].history.push({
+    status,
+    label,
+    date: new Date().toISOString(),
+    actor: req.user.name,
+    hash: "0x" + Math.random().toString(16).slice(2, 10) + "..."
   });
 
-  // Admin: Get all users
-  app.get('/api/admin/users', authenticateToken, (req: any, res) => {
-    if (req.user.role !== 'Administrateur') return res.sendStatus(403);
-    res.json(ACTORS);
-  });
-
-  // Admin: Create user
-  app.post('/api/admin/users/create', authenticateToken, (req: any, res) => {
-    if (req.user.role !== 'Administrateur') return res.sendStatus(403);
-    const { name, email, password, role, phone, location, zone } = req.body;
-    
-    if (ACTORS.find(a => a.email === email)) {
-      return res.status(400).json({ message: "Email déjà utilisé" });
-    }
-
-    const prefix = role.substring(0, 3).toUpperCase();
-    const newUser = {
-      id: `${prefix}-${Math.floor(1000 + Math.random() * 9000)}`,
-      name, email, password, role, phone, location, zone,
-      color: '#2d5a27'
-    };
-    ACTORS.push(newUser);
-    res.status(201).json(newUser);
-  });
-
-  app.get('/api/notifications', authenticateToken, (req: any, res) => {
-    const userNotifications = NOTIFICATIONS.filter(n => n.toRole === req.user.role);
-    res.json(userNotifications);
-  });
-
-  app.post('/api/notifications/read', authenticateToken, (req: any, res) => {
-    NOTIFICATIONS = NOTIFICATIONS.map(n => n.toRole === req.user.role ? { ...n, read: true } : n);
-    res.json({ success: true });
-  });
-
-  app.get('/api/auth/me', authenticateToken, (req: any, res) => {
-    res.json(req.user);
-  });
-
-  app.get('/api/cacao/all', authenticateToken, (req, res) => {
-    res.json(lotHistory);
-  });
-
-  app.get('/api/cacao/trace/:id', authenticateToken, (req, res) => {
-    const lot = lotHistory.find(l => l.id === req.params.id);
-    if (!lot) return res.status(404).json({ message: "Lot non trouvé" });
-    res.json(lot);
-  });
-
-  app.post('/api/cacao/add', authenticateToken, (req: any, res) => {
-    const { quantity, origin, gps, photos, note } = req.body;
-    const newLot = {
-      id: `LOT-${Math.floor(1000 + Math.random() * 9000)}`,
-      producerId: req.user.id,
-      producerName: req.user.name,
-      quantity,
-      origin,
-      gps,
-      note: note || "",
-      timestamp: new Date().toISOString(),
-      status: 0,
-      photos: photos || [],
-      history: [
-        { 
-          status: 0, 
-          label: "Récolte Enregistrée", 
-          date: new Date().toISOString(), 
-          actor: req.user.name, 
-          hash: `0x${Math.random().toString(16).slice(2, 10)}...` 
-        }
-      ]
-    };
-    lotHistory.unshift(newLot);
-
-    // Notify Cooperative
+  if (nextRole) {
     NOTIFICATIONS.unshift({
       id: Date.now(),
-      toRole: "Coopérative",
-      message: `Nouveau lot récolté par ${req.user.name} (${newLot.id})`,
+      toRole: nextRole,
+      message: `Action requise sur ${id} : ${label}`,
       date: new Date().toISOString(),
       read: false,
       type: 'info'
     });
+  }
 
-    res.status(201).json(newLot);
+  res.json(lotHistory[lotIndex]);
+});
+
+app.get('/api/cacao/stats', authenticateToken, (req, res) => {
+  res.json({
+    totalLots: lotHistory.length,
+    totalQuantity: lotHistory.reduce((acc, lot) => acc + lot.quantity, 0),
+    activeTransports: lotHistory.filter(l => l.status === 2).length,
+    certifiedLots: lotHistory.filter(l => l.status >= 1).length,
+    eudrComplianceScore: 98.5,
+    regionalDistribution: [
+      { region: "Plateaux", cases: 45 },
+      { region: "Centrale", cases: 22 },
+      { region: "Kara", cases: 12 }
+    ]
   });
+});
 
-  app.post('/api/cacao/transition/:id', authenticateToken, (req: any, res) => {
-    const { id } = req.params;
-    const { status, label, nextRole } = req.body;
-    
-    const lotIndex = lotHistory.findIndex(l => l.id === id);
-    if (lotIndex === -1) return res.status(404).json({ message: "Lot non trouvé" });
+// API 404 handler
+app.use('/api/*', (req, res) => {
+  res.status(404).json({ message: `API route not found: ${req.originalUrl}` });
+});
 
-    lotHistory[lotIndex].status = status;
-    lotHistory[lotIndex].history.push({
-      status,
-      label,
-      date: new Date().toISOString(),
-      actor: req.user.name,
-      hash: "0x" + Math.random().toString(16).slice(2, 10) + "..."
+// Global Error Handler
+app.use((err: any, req: any, res: any, next: any) => {
+  console.error('Server Error:', err);
+  if (req.path.startsWith('/api/')) {
+    return res.status(500).json({ 
+      message: "Une erreur interne est survenue sur le serveur",
+      error: process.env.NODE_ENV === 'development' ? err.message : undefined
     });
+  }
+  next(err);
+});
 
-    if (nextRole) {
-      NOTIFICATIONS.unshift({
-        id: Date.now(),
-        toRole: nextRole,
-        message: `Action requise sur ${id} : ${label}`,
-        date: new Date().toISOString(),
-        read: false,
-        type: 'info'
-      });
-    }
-
-    res.json(lotHistory[lotIndex]);
-  });
-
-  app.get('/api/cacao/stats', authenticateToken, (req, res) => {
-    res.json({
-      totalLots: lotHistory.length,
-      totalQuantity: lotHistory.reduce((acc, lot) => acc + lot.quantity, 0),
-      activeTransports: lotHistory.filter(l => l.status === 2).length,
-      certifiedLots: lotHistory.filter(l => l.status >= 1).length,
-      eudrComplianceScore: 98.5,
-      regionalDistribution: [
-        { region: "Plateaux", cases: 45 },
-        { region: "Centrale", cases: 22 },
-        { region: "Kara", cases: 12 }
-      ]
-    });
-  });
-
-  // API 404 handler
-  app.use('/api/*', (req, res) => {
-    res.status(404).json({ message: `API route not found: ${req.originalUrl}` });
-  });
-
-  // Global Error Handler
-  app.use((err: any, req: any, res: any, next: any) => {
-    console.error('Server Error:', err);
-    if (req.path.startsWith('/api/')) {
-      return res.status(500).json({ 
-        message: "Une erreur interne est survenue sur le serveur",
-        error: process.env.NODE_ENV === 'development' ? err.message : undefined
-      });
-    }
-    next(err);
-  });
-
+async function startServer() {
   // --- VITE / STATIC SERVING ---
   const isProd = process.env.NODE_ENV === 'production' || !!process.env.VERCEL || fs.existsSync(path.join(DIRNAME, 'index.html'));
 
@@ -337,9 +337,11 @@ async function startServer() {
     });
   }
 
-  const server = app.listen(PORT, '0.0.0.0', () => {
-    console.log(`ChainCacao Server running on http://localhost:${PORT}`);
-  });
+  if (!process.env.VERCEL) {
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`ChainCacao Server running on http://localhost:${PORT}`);
+    });
+  }
 }
 
 startServer();
