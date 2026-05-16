@@ -6,10 +6,19 @@ import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import fs from 'fs';
 
-dotenv.config();
+// Helper to get __dirname equivalent in both ESM and CJS
+const getDirname = () => {
+  try {
+    return path.dirname(fileURLToPath(import.meta.url));
+  } catch (e) {
+    // @ts-ignore - __dirname is available in CJS
+    return __dirname;
+  }
+};
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const DIRNAME = getDirname();
+
+dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'chaincacao_secret_2026';
 
@@ -67,12 +76,17 @@ let NOTIFICATIONS = [
 ];
 
 const app = express();
-const PORT = parseInt(process.env.PORT || '3000', 10);
+const PORT = 3000;
 
 async function startServer() {
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ limit: '10mb', extended: true }));
   app.use(cors());
+
+  // Health Check
+  app.get('/api/health', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  });
 
   // --- API ROUTES ---
 
@@ -282,21 +296,21 @@ async function startServer() {
   });
 
   // --- VITE / STATIC SERVING ---
-  const isProd = process.env.NODE_ENV === 'production' || !!process.env.VERCEL;
+  const isProd = process.env.NODE_ENV === 'production' || !!process.env.VERCEL || fs.existsSync(path.join(DIRNAME, 'index.html'));
 
-  if (isProd && !process.env.VERCEL) {
-    // Only serve static files via Express if NOT on Vercel (e.g. self-hosted node server)
-    const distPath = path.resolve(process.cwd(), 'dist');
+  if (isProd) {
+    // In production (or if index.html exists in the same dir as the bundle), serve static files
+    const distPath = DIRNAME;
     app.use(express.static(distPath));
     app.get('*', (req, res, next) => {
       if (req.path.startsWith('/api/')) return next();
       res.sendFile(path.join(distPath, 'index.html'));
     });
-  } else if (!isProd && !process.env.VERCEL) {
+  } else {
     // Local Dev / AIS
     const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
-      root: path.resolve(__dirname, '../frontend'),
+      root: path.resolve(DIRNAME, '../frontend'),
       server: { middlewareMode: true },
       appType: 'spa',
     });
@@ -306,7 +320,7 @@ async function startServer() {
     // Serve transformed index.html for all non-API routes
     app.get('*', async (req, res, next) => {
       const url = req.originalUrl;
-      const htmlPath = path.resolve(__dirname, '../frontend/index.html');
+      const htmlPath = path.resolve(DIRNAME, '../frontend/index.html');
       
       if (!fs.existsSync(htmlPath)) {
         return res.status(404).send('Frontend balance non trouvée. Vérifiez le dossier /frontend');
@@ -323,26 +337,9 @@ async function startServer() {
     });
   }
 
-  if (!process.env.VERCEL) {
-    const server = app.listen(PORT, '0.0.0.0', () => {
-      console.log(`ChainCacao Server running on http://localhost:${PORT}`);
-    });
-
-    server.on('error', (e: any) => {
-      if (e.code === 'EADDRINUSE') {
-        console.error('\n' + '='.repeat(50));
-        console.error(` ERREUR : Le port ${PORT} est déjà utilisé !`);
-        console.error('='.repeat(50));
-        console.error(`Un autre serveur ChainCacao est probablement déjà lancé.`);
-        console.error(`Vérifiez vos terminaux ou tuez le processus occupant le port ${PORT}.`);
-        console.error(`Sur Windows : netstat -ano | findstr :${PORT}`);
-        console.error('='.repeat(50) + '\n');
-        process.exit(1);
-      } else {
-        console.error('Erreur serveur critique:', e);
-      }
-    });
-  }
+  const server = app.listen(PORT, '0.0.0.0', () => {
+    console.log(`ChainCacao Server running on http://localhost:${PORT}`);
+  });
 }
 
 startServer();
