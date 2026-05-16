@@ -1,10 +1,10 @@
-import express from 'express';
-import path from 'path';
-import cors from 'cors';
-import { fileURLToPath } from 'url';
-import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv';
-import fs from 'fs';
+import express from "express";
+import path from "path";
+import cors from "cors";
+import { fileURLToPath } from "url";
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+import fs from "fs";
 
 // Helper to get __dirname equivalent in both ESM and CJS
 const getDirname = () => {
@@ -20,18 +20,84 @@ const DIRNAME = getDirname();
 
 dotenv.config();
 
-const JWT_SECRET = process.env.JWT_SECRET || 'chaincacao_secret_2026';
+const JWT_SECRET = process.env.JWT_SECRET || "chaincacao_secret_2026";
 
 // --- MOCK DATA & ACTORS ---
 let ACTORS = [
-  { id: "PROD-001", role: "Agriculteur", name: "Koffi Mensah", email: "koffi@farm.tg", password: "password123", color: "#4CAF50", phone: "+228 90 00 01", location: "Kpalimé", zone: "Plateaux" },
-  { id: "COOP-011", role: "Coopérative", name: "Collectif Sud", email: "coop@cacao.tg", password: "password123", color: "#8D6E63", phone: "+228 91 00 02", location: "Atakpamé" },
-  { id: "TRANS-77", role: "Transporteur", name: "Togo Logistique", email: "trans@cargo.tg", password: "password123", color: "#FF9800", phone: "+228 92 00 03" },
-  { id: "EXP-500", role: "Exportateur", name: "Togo Export", email: "export@cargo.tg", password: "password123", color: "#DAA520", phone: "+228 93 00 04" },
-  { id: "BUY-EU-01", role: "Acheteur EU", name: "BioChoc Europe", email: "buyer@biochoc.eu", password: "password123", color: "#2196F3", phone: "+32 2 00 01", location: "Anvers, Belgique" },
-  { id: "MIN-AGRIC-01", role: "Ministère", name: "Direction Agriculture", email: "contact@agriculture.gouv.tg", password: "password123", color: "#1a3a3a", phone: "+228 22 21 00" },
-  { id: "ADMIN-01", role: "Administrateur", name: "Super Administrateur", email: "admin@chaincacao.tg", password: "CacaoTogo2026!", color: "#333333" },
-  { id: "ADMIN-02", role: "Administrateur", name: "Michel Ame Yovo", email: "michelame.yovo@gmail.com", password: "password123", color: "#2d5a27" }
+  {
+    id: "PROD-001",
+    role: "Agriculteur",
+    name: "Koffi Mensah",
+    email: "koffi@farm.tg",
+    password: "password123",
+    color: "#4CAF50",
+    phone: "+228 90 00 01",
+    location: "Kpalimé",
+    zone: "Plateaux",
+  },
+  {
+    id: "COOP-011",
+    role: "Coopérative",
+    name: "Collectif Sud",
+    email: "coop@cacao.tg",
+    password: "password123",
+    color: "#8D6E63",
+    phone: "+228 91 00 02",
+    location: "Atakpamé",
+  },
+  {
+    id: "TRANS-77",
+    role: "Transporteur",
+    name: "Togo Logistique",
+    email: "trans@cargo.tg",
+    password: "password123",
+    color: "#FF9800",
+    phone: "+228 92 00 03",
+  },
+  {
+    id: "EXP-500",
+    role: "Exportateur",
+    name: "Togo Export",
+    email: "export@cargo.tg",
+    password: "password123",
+    color: "#DAA520",
+    phone: "+228 93 00 04",
+  },
+  {
+    id: "BUY-EU-01",
+    role: "Acheteur EU",
+    name: "BioChoc Europe",
+    email: "buyer@biochoc.eu",
+    password: "password123",
+    color: "#2196F3",
+    phone: "+32 2 00 01",
+    location: "Anvers, Belgique",
+  },
+  {
+    id: "MIN-AGRIC-01",
+    role: "Ministère",
+    name: "Direction Agriculture",
+    email: "contact@agriculture.gouv.tg",
+    password: "password123",
+    color: "#1a3a3a",
+    phone: "+228 22 21 00",
+  },
+  {
+    id: "ADMIN-01",
+    role: "Administrateur",
+    name: "Super Administrateur",
+    email: "admin@chaincacao.tg",
+    password: "CacaoTogo2026!",
+    color: "#333333",
+  },
+  {
+    id: "ADMIN-02",
+    role: "Administrateur",
+    name: "Michel Ame Yovo",
+    email: "michelame.yovo@gmail.com",
+    password: "password123",
+    color: "#2d5a27",
+  },
 ];
 
 // Lot Status: 0: Récolté, 1: Certifié, 2: En Transit, 3: Reçu par Exportateur, 4: Reçu par Acheteur EU
@@ -44,15 +110,45 @@ let lotHistory = [
     origin: "Plateaux, Togo",
     gps: "6.9103° N, 0.6385° E",
     timestamp: new Date(Date.now() - 604800000).toISOString(),
-    status: 4, 
+    status: 4,
     photos: ["https://images.unsplash.com/photo-1542662565-7e4b66bae529?w=400"],
     history: [
-      { status: 0, label: "Récolte Enregistrée", date: new Date(Date.now() - 604800000).toISOString(), actor: "Koffi Mensah", hash: "0x7f...a1b2" },
-      { status: 1, label: "Certifié par Coopérative", date: new Date(Date.now() - 518400000).toISOString(), actor: "Collectif Sud", hash: "0x8f...c3d4" },
-      { status: 2, label: "En Transit Logistique", date: new Date(Date.now() - 432000000).toISOString(), actor: "Togo Logistique", hash: "0x9f...e5f6" },
-      { status: 3, label: "Reçu par l'Exportateur", date: new Date(Date.now() - 345600000).toISOString(), actor: "Togo Export", hash: "0xaf...g7h8" },
-      { status: 4, label: "Livraison Confirmée EU", date: new Date(Date.now() - 259200000).toISOString(), actor: "BioChoc Europe", hash: "0xbf...i9j0" }
-    ]
+      {
+        status: 0,
+        label: "Récolte Enregistrée",
+        date: new Date(Date.now() - 604800000).toISOString(),
+        actor: "Koffi Mensah",
+        hash: "0x7f...a1b2",
+      },
+      {
+        status: 1,
+        label: "Certifié par Coopérative",
+        date: new Date(Date.now() - 518400000).toISOString(),
+        actor: "Collectif Sud",
+        hash: "0x8f...c3d4",
+      },
+      {
+        status: 2,
+        label: "En Transit Logistique",
+        date: new Date(Date.now() - 432000000).toISOString(),
+        actor: "Togo Logistique",
+        hash: "0x9f...e5f6",
+      },
+      {
+        status: 3,
+        label: "Reçu par l'Exportateur",
+        date: new Date(Date.now() - 345600000).toISOString(),
+        actor: "Togo Export",
+        hash: "0xaf...g7h8",
+      },
+      {
+        status: 4,
+        label: "Livraison Confirmée EU",
+        date: new Date(Date.now() - 259200000).toISOString(),
+        actor: "BioChoc Europe",
+        hash: "0xbf...i9j0",
+      },
+    ],
   },
   {
     id: "LOT-9012",
@@ -65,35 +161,63 @@ let lotHistory = [
     status: 0,
     photos: ["https://images.unsplash.com/photo-1559440666-8806282362b7?w=400"],
     history: [
-      { status: 0, label: "Récolte Enregistrée", date: new Date(Date.now() - 86400000).toISOString(), actor: "Koffi Mensah", hash: "0xcf...k1l2" }
-    ]
-  }
+      {
+        status: 0,
+        label: "Récolte Enregistrée",
+        date: new Date(Date.now() - 86400000).toISOString(),
+        actor: "Koffi Mensah",
+        hash: "0xcf...k1l2",
+      },
+    ],
+  },
 ];
 
 let NOTIFICATIONS = [
-  { id: 1, toRole: "Agriculteur", message: "Votre lot LOT-8821 a atteint l'étape de Transformation.", date: new Date().toISOString(), read: false, type: 'info' },
-  { id: 2, toRole: "Coopérative", message: "Nouveau lot en attente de certification par Koffi Mensah (LOT-9012)", date: new Date().toISOString(), read: false, type: 'warning' },
-  { id: 3, toRole: "Ministère", message: "Alerte: Augmentation de production de 15% dans la zone Plateaux.", date: new Date().toISOString(), read: false, type: 'info' }
+  {
+    id: 1,
+    toRole: "Agriculteur",
+    message: "Votre lot LOT-8821 a atteint l'étape de Transformation.",
+    date: new Date().toISOString(),
+    read: false,
+    type: "info",
+  },
+  {
+    id: 2,
+    toRole: "Coopérative",
+    message:
+      "Nouveau lot en attente de certification par Koffi Mensah (LOT-9012)",
+    date: new Date().toISOString(),
+    read: false,
+    type: "warning",
+  },
+  {
+    id: 3,
+    toRole: "Ministère",
+    message: "Alerte: Augmentation de production de 15% dans la zone Plateaux.",
+    date: new Date().toISOString(),
+    read: false,
+    type: "info",
+  },
 ];
 
 const app = express();
 const PORT = 3000;
 
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ limit: '10mb', extended: true }));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ limit: "10mb", extended: true }));
 app.use(cors());
 
 // Health Check
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+app.get("/api/health", (req, res) => {
+  res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
 // --- API ROUTES ---
 
 // Auth Middleware
 const authenticateToken = (req: any, res: any, next: any) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
   if (!token) return res.status(401).json({ message: "Non authentifié" });
 
   jwt.verify(token, JWT_SECRET, (err: any, user: any) => {
@@ -103,22 +227,36 @@ const authenticateToken = (req: any, res: any, next: any) => {
   });
 };
 
-app.post('/api/auth/login', (req, res) => {
+app.post("/api/auth/login", (req, res) => {
   const { identifier, password } = req.body;
-  const cleanId = String(identifier || '').trim();
+  const cleanId = String(identifier || "").trim();
   console.log(`Login attempt for: ${cleanId}`);
-  const actor = ACTORS.find(a => (a.email === cleanId || a.id === cleanId) && a.password === password);
+  const actor = ACTORS.find(
+    (a) => (a.email === cleanId || a.id === cleanId) && a.password === password,
+  );
 
   if (actor) {
     console.log(`Login success for: ${actor.name} (${actor.role})`);
-    const token = jwt.sign({ 
-      id: actor.id, 
-      email: actor.email, 
-      role: actor.role, 
-      name: actor.name,
-      color: actor.color 
-    }, JWT_SECRET);
-    res.json({ token, user: { id: actor.id, email: actor.email, role: actor.role, name: actor.name, color: actor.color } });
+    const token = jwt.sign(
+      {
+        id: actor.id,
+        email: actor.email,
+        role: actor.role,
+        name: actor.name,
+        color: actor.color,
+      },
+      JWT_SECRET,
+    );
+    res.json({
+      token,
+      user: {
+        id: actor.id,
+        email: actor.email,
+        role: actor.role,
+        name: actor.name,
+        color: actor.color,
+      },
+    });
   } else {
     console.log(`Login failed for: ${identifier}`);
     res.status(401).json({ message: "Identifiant ou mot de passe incorrect" });
@@ -126,76 +264,86 @@ app.post('/api/auth/login', (req, res) => {
 });
 
 // Combined endpoint for dashboard fluidity
-app.get('/api/dashboard/init', authenticateToken, (req: any, res) => {
+app.get("/api/dashboard/init", authenticateToken, (req: any, res) => {
   const stats = {
     totalLots: lotHistory.length,
     totalQuantity: lotHistory.reduce((acc, lot) => acc + lot.quantity, 0),
-    activeTransports: lotHistory.filter(l => l.status === 2).length,
-    certifiedLots: lotHistory.filter(l => l.status >= 1).length,
+    activeTransports: lotHistory.filter((l) => l.status === 2).length,
+    certifiedLots: lotHistory.filter((l) => l.status >= 1).length,
     eudrComplianceScore: 98.5,
     regionalDistribution: [
       { region: "Plateaux", cases: 45 },
       { region: "Centrale", cases: 22 },
-      { region: "Kara", cases: 12 }
-    ]
+      { region: "Kara", cases: 12 },
+    ],
   };
-  const notifications = NOTIFICATIONS.filter(n => n.toRole === req.user.role);
+  const notifications = NOTIFICATIONS.filter((n) => n.toRole === req.user.role);
   const lots = lotHistory;
-  const usersData = req.user.role === 'Administrateur' ? ACTORS : null;
-  
+  const usersData = req.user.role === "Administrateur" ? ACTORS : null;
+
   res.json({ stats, notifications, lots, users: usersData });
 });
 
 // Admin: Get all users
-app.get('/api/admin/users', authenticateToken, (req: any, res) => {
-  if (req.user.role !== 'Administrateur') return res.sendStatus(403);
+app.get("/api/admin/users", authenticateToken, (req: any, res) => {
+  if (req.user.role !== "Administrateur") return res.sendStatus(403);
   res.json(ACTORS);
 });
 
 // Admin: Create user
-app.post('/api/admin/users/create', authenticateToken, (req: any, res) => {
-  if (req.user.role !== 'Administrateur') return res.sendStatus(403);
+app.post("/api/admin/users/create", authenticateToken, (req: any, res) => {
+  if (req.user.role !== "Administrateur") return res.sendStatus(403);
   const { name, email, password, role, phone, location, zone } = req.body;
-  
-  if (ACTORS.find(a => a.email === email)) {
+
+  if (ACTORS.find((a) => a.email === email)) {
     return res.status(400).json({ message: "Email déjà utilisé" });
   }
 
   const prefix = role.substring(0, 3).toUpperCase();
   const newUser = {
     id: `${prefix}-${Math.floor(1000 + Math.random() * 9000)}`,
-    name, email, password, role, phone, location, zone,
-    color: '#2d5a27'
+    name,
+    email,
+    password,
+    role,
+    phone,
+    location,
+    zone,
+    color: "#2d5a27",
   };
   ACTORS.push(newUser);
   res.status(201).json(newUser);
 });
 
-app.get('/api/notifications', authenticateToken, (req: any, res) => {
-  const userNotifications = NOTIFICATIONS.filter(n => n.toRole === req.user.role);
+app.get("/api/notifications", authenticateToken, (req: any, res) => {
+  const userNotifications = NOTIFICATIONS.filter(
+    (n) => n.toRole === req.user.role,
+  );
   res.json(userNotifications);
 });
 
-app.post('/api/notifications/read', authenticateToken, (req: any, res) => {
-  NOTIFICATIONS = NOTIFICATIONS.map(n => n.toRole === req.user.role ? { ...n, read: true } : n);
+app.post("/api/notifications/read", authenticateToken, (req: any, res) => {
+  NOTIFICATIONS = NOTIFICATIONS.map((n) =>
+    n.toRole === req.user.role ? { ...n, read: true } : n,
+  );
   res.json({ success: true });
 });
 
-app.get('/api/auth/me', authenticateToken, (req: any, res) => {
+app.get("/api/auth/me", authenticateToken, (req: any, res) => {
   res.json(req.user);
 });
 
-app.get('/api/cacao/all', authenticateToken, (req, res) => {
+app.get("/api/cacao/all", authenticateToken, (req, res) => {
   res.json(lotHistory);
 });
 
-app.get('/api/cacao/trace/:id', authenticateToken, (req, res) => {
-  const lot = lotHistory.find(l => l.id === req.params.id);
+app.get("/api/cacao/trace/:id", authenticateToken, (req, res) => {
+  const lot = lotHistory.find((l) => l.id === req.params.id);
   if (!lot) return res.status(404).json({ message: "Lot non trouvé" });
   res.json(lot);
 });
 
-app.post('/api/cacao/add', authenticateToken, (req: any, res) => {
+app.post("/api/cacao/add", authenticateToken, (req: any, res) => {
   const { quantity, origin, gps, photos, note } = req.body;
   const newLot = {
     id: `LOT-${Math.floor(1000 + Math.random() * 9000)}`,
@@ -209,14 +357,14 @@ app.post('/api/cacao/add', authenticateToken, (req: any, res) => {
     status: 0,
     photos: photos || [],
     history: [
-      { 
-        status: 0, 
-        label: "Récolte Enregistrée", 
-        date: new Date().toISOString(), 
-        actor: req.user.name, 
-        hash: `0x${Math.random().toString(16).slice(2, 10)}...` 
-      }
-    ]
+      {
+        status: 0,
+        label: "Récolte Enregistrée",
+        date: new Date().toISOString(),
+        actor: req.user.name,
+        hash: `0x${Math.random().toString(16).slice(2, 10)}...`,
+      },
+    ],
   };
   lotHistory.unshift(newLot);
 
@@ -227,18 +375,19 @@ app.post('/api/cacao/add', authenticateToken, (req: any, res) => {
     message: `Nouveau lot récolté par ${req.user.name} (${newLot.id})`,
     date: new Date().toISOString(),
     read: false,
-    type: 'info'
+    type: "info",
   });
 
   res.status(201).json(newLot);
 });
 
-app.post('/api/cacao/transition/:id', authenticateToken, (req: any, res) => {
+app.post("/api/cacao/transition/:id", authenticateToken, (req: any, res) => {
   const { id } = req.params;
   const { status, label, nextRole } = req.body;
-  
-  const lotIndex = lotHistory.findIndex(l => l.id === id);
-  if (lotIndex === -1) return res.status(404).json({ message: "Lot non trouvé" });
+
+  const lotIndex = lotHistory.findIndex((l) => l.id === id);
+  if (lotIndex === -1)
+    return res.status(404).json({ message: "Lot non trouvé" });
 
   lotHistory[lotIndex].status = status;
   lotHistory[lotIndex].history.push({
@@ -246,7 +395,7 @@ app.post('/api/cacao/transition/:id', authenticateToken, (req: any, res) => {
     label,
     date: new Date().toISOString(),
     actor: req.user.name,
-    hash: "0x" + Math.random().toString(16).slice(2, 10) + "..."
+    hash: "0x" + Math.random().toString(16).slice(2, 10) + "...",
   });
 
   if (nextRole) {
@@ -256,69 +405,73 @@ app.post('/api/cacao/transition/:id', authenticateToken, (req: any, res) => {
       message: `Action requise sur ${id} : ${label}`,
       date: new Date().toISOString(),
       read: false,
-      type: 'info'
+      type: "info",
     });
   }
 
   res.json(lotHistory[lotIndex]);
 });
 
-app.get('/api/cacao/stats', authenticateToken, (req, res) => {
+app.get("/api/cacao/stats", authenticateToken, (req, res) => {
   res.json({
     totalLots: lotHistory.length,
     totalQuantity: lotHistory.reduce((acc, lot) => acc + lot.quantity, 0),
-    activeTransports: lotHistory.filter(l => l.status === 2).length,
-    certifiedLots: lotHistory.filter(l => l.status >= 1).length,
+    activeTransports: lotHistory.filter((l) => l.status === 2).length,
+    certifiedLots: lotHistory.filter((l) => l.status >= 1).length,
     eudrComplianceScore: 98.5,
     regionalDistribution: [
       { region: "Plateaux", cases: 45 },
       { region: "Centrale", cases: 22 },
-      { region: "Kara", cases: 12 }
-    ]
+      { region: "Kara", cases: 12 },
+    ],
   });
 });
 
-const isProd = process.env.NODE_ENV === 'production' || !!process.env.VERCEL;
+const isProd = process.env.NODE_ENV === "production" || !!process.env.VERCEL;
 
 // Vercel and Production static file serving
-const distPath = path.join(process.cwd(), 'dist');
+const distPath = path.join(process.cwd(), "dist");
 
 if (isProd) {
   console.log(`Serving static files from: ${distPath}`);
-  if (!fs.existsSync(path.join(distPath, 'index.html'))) {
-    console.warn('WARNING: dist/index.html not found. Frontend might not load.');
+  if (!fs.existsSync(path.join(distPath, "index.html"))) {
+    console.warn(
+      "WARNING: dist/index.html not found. Frontend might not load.",
+    );
   }
-  app.use(express.static(distPath, {
-    maxAge: '1d',
-    index: 'index.html'
-  }));
+  app.use(
+    express.static(distPath, {
+      maxAge: "1d",
+      index: "index.html",
+    }),
+  );
 }
 
 // API 404 handler
-app.use('/api/*', (req, res) => {
+app.use("/api/*", (req, res) => {
   res.status(404).json({ message: `API route not found: ${req.originalUrl}` });
 });
 
 // SPA Fallback for production
 if (isProd) {
-  app.get('*', (req, res, next) => {
-    if (req.path.startsWith('/api/')) return next();
-    const indexPath = path.join(distPath, 'index.html');
+  app.get("*", (req, res, next) => {
+    if (req.path.startsWith("/api/")) return next();
+    const indexPath = path.join(distPath, "index.html");
     if (fs.existsSync(indexPath)) {
       res.sendFile(indexPath);
     } else {
-      res.status(404).send('Frontend build not found. Path: ' + indexPath);
+      res.status(404).send("Frontend build not found. Path: " + indexPath);
     }
   });
 }
 
 // Global Error Handler
 app.use((err: any, req: any, res: any, next: any) => {
-  console.error('Server Error:', err);
-  if (req.path.startsWith('/api/')) {
-    return res.status(500).json({ 
+  console.error("Server Error:", err);
+  if (req.path.startsWith("/api/")) {
+    return res.status(500).json({
       message: "Une erreur interne est survenue sur le serveur",
-      error: process.env.NODE_ENV === 'development' ? err.message : undefined
+      error: process.env.NODE_ENV === "development" ? err.message : undefined,
     });
   }
   next(err);
@@ -327,28 +480,30 @@ app.use((err: any, req: any, res: any, next: any) => {
 async function startServer() {
   if (!isProd) {
     // Local Dev / AIS
-    const { createServer: createViteServer } = await import('vite');
+    const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
-      root: path.resolve(DIRNAME, 'frontend'),
-      configFile: path.resolve(DIRNAME, 'vite.config.ts'),
+      root: path.resolve(DIRNAME, "frontend"),
+      configFile: path.resolve(DIRNAME, "vite.config.ts"),
       server: { middlewareMode: true },
-      appType: 'spa',
+      appType: "spa",
     });
-    
+
     app.use(vite.middlewares);
 
-    app.get('*', async (req, res, next) => {
+    app.get("*", async (req, res, next) => {
       const url = req.originalUrl;
-      const htmlPath = path.resolve(DIRNAME, 'frontend/index.html');
-      
+      const htmlPath = path.resolve(DIRNAME, "frontend/index.html");
+
       if (!fs.existsSync(htmlPath)) {
-        return res.status(404).send('Frontend not found. Check the /frontend folder.');
+        return res
+          .status(404)
+          .send("Frontend not found. Check the /frontend folder.");
       }
 
       try {
-        let template = fs.readFileSync(htmlPath, 'utf-8');
+        let template = fs.readFileSync(htmlPath, "utf-8");
         template = await vite.transformIndexHtml(url, template);
-        res.status(200).set({ 'Content-Type': 'text/html' }).end(template);
+        res.status(200).set({ "Content-Type": "text/html" }).end(template);
       } catch (e) {
         vite.ssrFixStacktrace(e as Error);
         next(e);
@@ -356,12 +511,17 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
+  app.listen(PORT, "0.0.0.0", () => {
     console.log(`ChainCacao Server running on port ${PORT}`);
   });
 }
 
-if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
+if (process.env.NODE_ENV !== "test" && !process.env.VERCEL) {
+  startServer();
+}
+
+// For local development: start the server
+if (import.meta.url === `file://${process.argv[1]}`) {
   startServer();
 }
 
