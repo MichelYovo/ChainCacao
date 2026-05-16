@@ -1,74 +1,81 @@
-# 🍫 ChainCacao - Guide Complet du MVP
+# 🍫 ChainCacao - MVP Full-Stack & Blockchain
 
-Ce projet est structuré pour être un MVP (Minimum Viable Product) fonctionnel incluant le Web, le Mobile et la Blockchain.
+Bienvenue dans le dépôt officiel de **ChainCacao**, le protocole de traçabilité du cacao togolais. Ce projet contient le Web (Frontend), l'API (Backend), l'Application Mobile (Expo) et les Contrats Intelligents (Polygon).
 
 ---
 
-## 🏗️ 1. Clonage et Installation du Projet
-Pour récupérer et installer le projet sur votre machine locale :
+## 🚀 Guide de Clonage Rapide (GitHub)
+
+Pour installer le projet proprement sur votre machine :
 
 ```bash
-# 1. Cloner le dépôt
-git clone <votre-url-repo>
+# 1. Cloner le repo
+git clone https://github.com/votre-username/chain-cacao.git
 cd chain-cacao
 
-# 2. Installer les dépendances globales (Backend & Frontend)
+# 2. Installer les dépendances globales
 npm install
 
-# 3. Configurer les variables d'environnement
+# 3. Créer le fichier d'environnement
 cp .env.example .env
-# Ouvrez .env et ajoutez votre PRIVATE_KEY pour la blockchain
+# ÉDITEZ le fichier .env et ajoutez votre PRIVATE_KEY (MetaMask)
 ```
 
 ---
 
-## 📱 2. Lancement du Mobile (Sur votre téléphone)
-L'application mobile utilise **Expo**. Voici comment la voir sur votre téléphone réel :
+## ⛓️ 1. Blockchain (Réseau Réel Polygon Amoy)
 
-1. **Installer l'app "Expo Go"** sur votre iPhone (App Store) ou Android (Play Store).
-2. Dans votre terminal sur PC :
-   ```bash
-   cd mobile
-   npm install
-   npx expo start
-   ```
-3. **Scanner le QR Code** avec l'application Expo Go (Android) ou l'appareil photo (iOS).
-4. *Note : Votre téléphone et votre PC doivent être sur le même réseau Wi-Fi.*
+Nous n'utilisons plus de simulation. Le contrat est prêt pour le réseau de test **Amoy**.
 
----
-
-## ⛓️ 3. Déploiement de la Blockchain (Réel)
-Nous utilisons **Polygon Amoy** pour une blockchain réelle sans frais élevés.
-
-1. **Obtenir des jetons de test** : Allez sur le [Polygon Faucet](https://faucet.polygon.technology/) et demandez des jetons POL pour votre adresse.
-2. **Configurer la clé privée** : Ajoutez votre `PRIVATE_KEY` dans le fichier `.env` à la racine.
-3. **Déployer** :
+1. **Obtenir des POL de test** : Allez sur le [Faucet Polygon](https://faucet.polygon.technology/).
+2. **Déployer le contrat** :
    ```bash
    cd blockchain
    npm install
    npm run deploy:amoy
    ```
-4. Copiez l'adresse du contrat affichée dans la console pour l'utiliser dans le backend.
+3. Copiez l'adresse affichée et collez-la dans votre `.env` à la racine : `CONTRACT_ADDRESS=0x...`
 
 ---
 
-## 🌐 4. Lancement du Web & API
+## 📱 2. Mobile (Installer sur votre Téléphone)
+
+L'application mobile utilise **Expo Go** pour être testée instantanément sans câbles.
+
+1. **Sur votre téléphone** : Téléchargez l'application **Expo Go** (App Store ou Play Store).
+2. **Sur votre PC** :
+   ```bash
+   cd mobile
+   npm install
+   npx expo start
+   ```
+3. **Connecter** : Scannez le QR Code qui s'affiche dans votre terminal avec l'application Expo Go (Android) ou l'appareil photo (iOS).
+   *Important : Votre téléphone et votre PC doivent être sur le même Wi-Fi.*
+
+---
+
+## 🌐 3. Web & API (Lancement local)
+
+Pour lancer le site web et le backend simultanément :
+
 ```bash
 # À la racine du projet
 npm run dev
 ```
-Accès : `http://localhost:3000`
+Accès local : `http://localhost:3000`
 
 ---
 
-## 📂 Structure du Code
-- **/frontend** : Interface Web React (Togo, traçabilité, dashboard).
-- **/backend** : API Express gérant la logique et la liaison blockchain.
-- **/mobile** : App mobile React Native pour les planteurs sur le terrain.
-- **/blockchain** : Contrats intelligents (Solidity) et scripts de déploiement réels.
+## 📂 Organisation des Dossiers
+- `/backend` : API Express + Liaison Blockchain (Ethers.js).
+- `/frontend` : Interface Web React (Traçabilité, Dashboards).
+- `/mobile` : Application React Native pour le terrain (Planteurs/Transport).
+- `/blockchain` : Smart Contracts Solidity (Polygon Amoy).
 
 ---
 
 ## 🎨 Logo
-Le nouveau logo a été intégré. Pour le modifier, remplacez simplement le fichier `frontend/public/logo.png` par votre image finale.
+L'image du logo doit être placée dans le dossier :
+`frontend/public/logo.png`
+Le site l'affichera automatiquement en haut à gauche.
 
