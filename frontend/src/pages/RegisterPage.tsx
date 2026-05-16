@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../components/security/auth-context';
+import { useAuth } from '@/components/security';
 import { motion, AnimatePresence } from 'motion/react';
-import { api } from '../services/api';
+import { api } from '@/services/api';
 import { 
   ArrowRight, 
   ArrowLeft, 

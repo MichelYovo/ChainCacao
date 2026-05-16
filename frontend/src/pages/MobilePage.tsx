@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Smartphone, Download, Share, PlusSquare, ArrowLeft, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Navbar } from '../components/layout/navbar';
+import { Navbar } from '@/components/layout/navbar';
 
 export const MobilePage: React.FC = () => {
   const navigate = useNavigate();

@@ -1,10 +1,10 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../security/auth-context';
+import { useAuth } from '@/components/security';
 import { Sprout, LogOut, Search, LayoutDashboard, Bell } from 'lucide-react';
 import { motion } from 'motion/react';
 
-import { Logo } from '../ui/logo';
+import { Logo } from '@/components/ui/logo';
 
 export const Navbar: React.FC = () => {
   const { user, logout } = useAuth();

@@ -1,13 +1,12 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './components/security/auth-context';
-import { ProtectedRoute } from './components/security/protected-route';
-import { Navbar } from './components/layout/navbar';
-import { LoginPage } from './pages/LoginPage';
-import { RegisterPage } from './pages/RegisterPage';
-import { LandingPage } from './pages/LandingPage';
-import { Dashboard } from './pages/Dashboard';
-import { TrackPage } from './pages/TrackPage';
-import { MobilePage } from './pages/MobilePage';
+import { AuthProvider, ProtectedRoute } from '@/components/security';
+import { Navbar } from '@/components/layout/navbar';
+import { LoginPage } from '@/pages/LoginPage';
+import { RegisterPage } from '@/pages/RegisterPage';
+import { LandingPage } from '@/pages/LandingPage';
+import { Dashboard } from '@/pages/Dashboard';
+import { TrackPage } from '@/pages/TrackPage';
+import { MobilePage } from '@/pages/MobilePage';
 
 export default function App() {
   return (
