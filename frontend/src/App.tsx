@@ -1,5 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
 import { AuthProvider, ProtectedRoute } from '@/components/security';
 import { Navbar } from '@/components/layout/navbar';
 import { LoginPage } from '@/pages/LoginPage';
@@ -9,14 +11,28 @@ import { Dashboard } from '@/pages/Dashboard';
 import { TrackPage } from '@/pages/TrackPage';
 import { MobilePage } from '@/pages/MobilePage';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      gcTime: 1000 * 60 * 60 * 24, // 24 hours
+      staleTime: 1000 * 60 * 5, // 5 minutes
+    },
+  },
+});
+
+const persister = createSyncStoragePersister({
+  storage: window.localStorage,
+});
 
 export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
+    <PersistQueryClientProvider
+      client={queryClient}
+      persistOptions={{ persister }}
+    >
       <AuthProvider>
-      <BrowserRouter>
-        <div className="min-h-screen bg-creme selection:bg-cacao-dore/30">
+        <BrowserRouter>
+          <div className="min-h-screen bg-creme selection:bg-cacao-dore/30">
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
@@ -61,6 +77,6 @@ export default function App() {
         </div>
       </BrowserRouter>
     </AuthProvider>
-    </QueryClientProvider>
+    </PersistQueryClientProvider>
   );
 }

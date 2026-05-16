@@ -57,6 +57,38 @@ export const LandingPage: React.FC = () => {
                 <Smartphone size={16} />
                 App Mobile
               </button>
+              <button
+                onClick={() => {
+                  const pitch = `
+                  PITCH CHAINCACAO (10 MIN)
+                  
+                  1. LE PROBLÈME (2 min)
+                  - Réglementation EUDR (2026) : Pas de GPS, pas d'exportation vers l'UE.
+                  - Opacité de la filière et déconnexion producteurs/marché.
+
+                  2. SOLUTION (2 min)
+                  - Registre immuable sur Polygon Blockchain.
+                  - Passeport Digital pour chaque lot de cacao.
+
+                  3. DÉMONSTRATION (3 min)
+                  - Agriculteur : Capture GPS & Certificat Digital.
+                  - Coopérative : Validation EUDR par satellite.
+                  - Acheteur : Traçabilité totale "Bean to Bar".
+
+                  4. IMPACT (2 min)
+                  - Zéro déforestation, transparence géo-spatiale.
+                  - Valorisation du prix au producteur.
+
+                  5. CONCLUSION (1 min)
+                  - Le bouclier digital de l'excellence togolaise.
+                  `;
+                  alert(pitch);
+                }}
+                className="px-6 py-4 glass bg-cacao-dore/10 text-cafe-profondeur border-cacao-dore/20 rounded-[24px] font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 hover:bg-cacao-dore/20 transition-all font-sans"
+              >
+                <Zap size={16} className="text-cacao-dore" />
+                Pitch 10 min
+              </button>
             </div>
 
             <div className="grid grid-cols-3 gap-8 pt-12 border-t border-cacao-dore/10">
