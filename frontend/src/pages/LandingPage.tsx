@@ -50,6 +50,13 @@ export const LandingPage: React.FC = () => {
               >
                 Accès Registre
               </button>
+              <button
+                onClick={() => navigate('/mobile')}
+                className="px-8 py-5 bg-cacao-vert text-white rounded-[24px] font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 hover:scale-105 transition-all shadow-2xl shadow-cacao-vert/20 flex-1 sm:flex-none"
+              >
+                <Smartphone size={20} />
+                App Mobile
+              </button>
             </div>
 
             <div className="grid grid-cols-3 gap-8 pt-12 border-t border-cacao-dore/10">
