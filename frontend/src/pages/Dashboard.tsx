@@ -4,6 +4,8 @@ import { api } from '@/services/api';
 import { Lot, Stats } from '@/types';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { StatCard } from '@/components/ui/StatCard';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useOffline } from '@/hooks/useOffline';
 import { 
   Package, 
   Search, 
@@ -22,7 +24,8 @@ import {
   Users,
   Camera,
   Maximize2,
-  QrCode
+  QrCode,
+  AlertTriangle
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
@@ -32,47 +35,98 @@ import { Logo } from '@/components/ui/Logo';
 
 export const Dashboard: React.FC = () => {
   const { user } = useAuth();
-  const [stats, setStats] = useState<Stats | null>(null);
-  const [lots, setLots] = useState<Lot[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const isOffline = useOffline();
+  
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: ['dashboardInit', user?.role],
+    queryFn: () => api.getDashboardInit(),
+    refetchInterval: isOffline ? false : 30000,
+    staleTime: 5000,
+  });
+
+  const stats = data?.stats as Stats | null;
+  const lots = (data?.lots || []) as Lot[];
+  const notifications = (data?.notifications || []) as any[];
+  const usersList = (data?.users || []) as any[];
+
   const [showAddForm, setShowAddForm] = useState(false);
   const [newLot, setNewLot] = useState({ quantity: 1000, origin: '', gps: '', photo: '', note: '' });
-  const [notifications, setNotifications] = useState<any[]>([]);
   const [selectedQR, setSelectedQR] = useState<string | null>(null);
-  const [users, setUsers] = useState<any[]>([]);
   const [showPhotoChoice, setShowPhotoChoice] = useState(false);
   const [isAdminCreating, setIsAdminCreating] = useState(false);
   const [newUserAccount, setNewUserAccount] = useState({ name: '', email: '', password: '', role: 'Agriculteur', phone: '' });
 
-  const getWordCount = (str: string) => str.trim().split(/\s+/).filter(Boolean).length;
-
-  const fetchData = async () => {
-    try {
-      const data = await api.getDashboardInit();
-      setStats(data.stats);
-      setLots(data.lots);
-      setNotifications(data.notifications);
-      if (user?.role === 'Administrateur') {
-        setUsers(data.users);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCreateUser = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await api.createUser(newUserAccount);
-      await fetchData();
+  const createUserMutation = useMutation({
+    mutationFn: (userData: any) => api.createUser(userData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['dashboardInit'] });
       setIsAdminCreating(false);
       setNewUserAccount({ name: '', email: '', password: '', role: 'Agriculteur', phone: '' });
-    } catch (err) {
-      alert("Erreur lors de la création de l'utilisateur");
     }
-  };
+  });
+
+  const addLotMutation = useMutation({
+    mutationFn: (lotData: any) => api.addLot(lotData),
+    onMutate: async (newLotData) => {
+      await queryClient.cancelQueries({ queryKey: ['dashboardInit'] });
+      const previousData = queryClient.getQueryData(['dashboardInit', user?.role]);
+      
+      if (previousData) {
+        queryClient.setQueryData(['dashboardInit', user?.role], (old: any) => ({
+          ...old,
+          lots: [{ 
+            ...newLotData, 
+            id: 'TEMP-' + Date.now(), 
+            producerId: user?.id, 
+            producerName: user?.name,
+            timestamp: new Date().toISOString(),
+            status: 0,
+            history: [{ label: 'Enregistrement...', date: new Date().toISOString() }] 
+          }, ...old.lots]
+        }));
+      }
+      return { previousData };
+    },
+    onError: (err, newLotData, context) => {
+      queryClient.setQueryData(['dashboardInit', user?.role], context?.previousData);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['dashboardInit'] });
+      setShowAddForm(false);
+      setNewLot({ quantity: 1000, origin: '', gps: '', photo: '', note: '' });
+    }
+  });
+
+  const transitionMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string, data: any }) => api.transitionLot(id, data),
+    onMutate: async ({ id, data }) => {
+      await queryClient.cancelQueries({ queryKey: ['dashboardInit'] });
+      const previousData = queryClient.getQueryData(['dashboardInit', user?.role]);
+      if (previousData) {
+        queryClient.setQueryData(['dashboardInit', user?.role], (old: any) => ({
+          ...old,
+          lots: old.lots.map((l: any) => l.id === id ? { ...l, status: data.status } : l)
+        }));
+      }
+      return { previousData };
+    },
+    onError: (err, variables, context) => {
+      queryClient.setQueryData(['dashboardInit', user?.role], context?.previousData);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['dashboardInit'] });
+    }
+  });
+
+  const markReadMutation = useMutation({
+    mutationFn: () => api.markNotificationsRead(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['dashboardInit'] });
+    }
+  });
+
+  const getWordCount = (str: string) => str.trim().split(/\s+/).filter(Boolean).length;
 
   const handlePhotoImport = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -85,47 +139,6 @@ export const Dashboard: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    fetchData();
-    // Poll for notifications every 60 seconds (reduced for fluidity on slow connections)
-    const interval = setInterval(fetchData, 60000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const handleAddLot = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await api.addLot({
-        ...newLot,
-        photos: newLot.photo ? [newLot.photo] : []
-      });
-      await fetchData();
-      setShowAddForm(false);
-      setNewLot({ quantity: 1000, origin: '', gps: '', photo: '', note: '' });
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleTransition = async (lotId: string, status: number, label: string, nextRole: string) => {
-    try {
-      await api.transitionLot(lotId, { status, label, nextRole });
-      await fetchData();
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleMarkRead = async () => {
-    try {
-      await api.markNotificationsRead();
-      await fetchData();
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  // Roles Specific Stats
   const getRoleStats = () => {
     if (user?.role === 'Agriculteur') {
       const myLots = lots.filter(l => l.producerId === user.id);
@@ -144,9 +157,12 @@ export const Dashboard: React.FC = () => {
     ];
   };
 
-  if (loading) return (
+  if (isLoading && !data) return (
     <div className="min-h-screen flex items-center justify-center bg-creme">
-      <Loader2 className="animate-spin text-cacao-vert w-12 h-12" />
+      <div className="text-center space-y-4">
+        <Loader2 className="animate-spin text-cacao-vert w-12 h-12 mx-auto" />
+        <p className="text-[10px] font-black uppercase tracking-widest text-cafe-clair">Chargement du Registre Immuable...</p>
+      </div>
     </div>
   );
 
@@ -187,6 +203,12 @@ export const Dashboard: React.FC = () => {
         </div>
 
         <div className="flex gap-3">
+          <div className="flex items-center gap-2 px-4 py-2 bg-creme-sombre/30 rounded-xl">
+             <div className={`w-2 h-2 rounded-full ${isOffline ? 'bg-red-500 animate-pulse' : 'bg-cacao-vert'}`} />
+             <span className="text-[10px] font-black uppercase tracking-widest text-cafe-moyen">
+               {isOffline ? 'Mode Hors Ligne' : 'Synchronisé'}
+             </span>
+          </div>
           {user?.role === 'Agriculteur' && (
             <button 
               onClick={() => setShowAddForm(true)}
@@ -276,7 +298,7 @@ export const Dashboard: React.FC = () => {
                       </div>
                       <div className="flex gap-3">
                         <button 
-                          onClick={() => handleTransition(lot.id, 1, "Certifié par Coopérative", "Transporteur")}
+                          onClick={() => transitionMutation.mutate({ id: lot.id, data: { status: 1, label: "Certifié par Coopérative", nextRole: "Transporteur" } })}
                           className="px-6 py-3 bg-cacao-vert text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-transform"
                         >
                           Certifier EUDR
@@ -305,7 +327,7 @@ export const Dashboard: React.FC = () => {
                     <h4 className="font-display font-bold text-xl mb-1">{lot.id}</h4>
                     <p className="text-cafe-clair text-xs font-bold uppercase tracking-widest mb-6">Chargement: {lot.origin}</p>
                     <button 
-                      onClick={() => handleTransition(lot.id, 2, "En Transit Logistique", "Exportateur")}
+                      onClick={() => transitionMutation.mutate({ id: lot.id, data: { status: 2, label: "En Transit Logistique", nextRole: "Exportateur" } })}
                       className="w-full py-4 bg-cafe-profondeur text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-cafe-moyen transition-colors"
                     >
                       Démarrer Livraison
@@ -327,7 +349,7 @@ export const Dashboard: React.FC = () => {
                       <p className="text-xs font-black uppercase tracking-widest opacity-60">Arrivée prévue au Port de Lomé</p>
                     </div>
                     <button 
-                      onClick={() => handleTransition(lot.id, 3, "Reçu par l'Exportateur", "Acheteur EU")}
+                      onClick={() => transitionMutation.mutate({ id: lot.id, data: { status: 3, label: "Reçu par l'Exportateur", nextRole: "Acheteur EU" } })}
                       className="px-8 py-4 bg-cafe-profondeur text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-transform"
                     >
                       Confirmer Réception
@@ -349,7 +371,7 @@ export const Dashboard: React.FC = () => {
                       <p className="text-xs font-black uppercase tracking-widest opacity-60">Chargé au Port de Lomé • En mer</p>
                     </div>
                     <button 
-                      onClick={() => handleTransition(lot.id, 4, "Livraison Confirmée EU", null as any)}
+                      onClick={() => transitionMutation.mutate({ id: lot.id, data: { status: 4, label: "Livraison Confirmée EU", nextRole: null as any } })}
                       className="px-8 py-4 bg-white text-blue-600 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-transform"
                     >
                       Confirmer Réception
@@ -373,7 +395,7 @@ export const Dashboard: React.FC = () => {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {users.map((u: any) => (
+                {usersList.map((u: any) => (
                   <GlassCard key={u.id} className="p-6 space-y-4 border-cacao-dore/10">
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 rounded-2xl bg-cafe-profondeur/5 flex items-center justify-center text-cafe-profondeur">
@@ -488,7 +510,7 @@ export const Dashboard: React.FC = () => {
             <div className="flex items-center justify-between">
               <h3 className="text-2xl font-black italic tracking-tighter">Alertes Systèmes</h3>
               {notifications.some(n => !n.read) && (
-                <button onClick={handleMarkRead} className="text-[9px] font-black uppercase tracking-widest text-cacao-vert hover:underline underline-offset-4">Tout marquer lu</button>
+                <button onClick={() => markReadMutation.mutate()} className="text-[9px] font-black uppercase tracking-widest text-cacao-vert hover:underline underline-offset-4">Tout marquer lu</button>
               )}
             </div>
             <div className="space-y-3">
@@ -588,7 +610,7 @@ export const Dashboard: React.FC = () => {
               </button>
             </div>
             
-            <form onSubmit={handleAddLot} className="space-y-6">
+            <form onSubmit={(e) => { e.preventDefault(); addLotMutation.mutate({ ...newLot, photos: newLot.photo ? [newLot.photo] : [] }); }} className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase tracking-[0.2em] text-cafe-clair ml-2">Quantité Net (kg)</label>
@@ -714,7 +736,7 @@ export const Dashboard: React.FC = () => {
               </button>
             </div>
             
-            <form onSubmit={handleCreateUser} className="space-y-4">
+            <form onSubmit={(e) => { e.preventDefault(); createUserMutation.mutate(newUserAccount); }} className="space-y-4">
               <div className="space-y-1">
                 <label className="text-[9px] font-black uppercase text-cafe-clair ml-2">Nom Complet / Organisation</label>
                 <input 

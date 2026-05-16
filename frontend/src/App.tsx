@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, ProtectedRoute } from '@/components/security';
 import { Navbar } from '@/components/layout/navbar';
 import { LoginPage } from '@/pages/LoginPage';
@@ -8,9 +9,12 @@ import { Dashboard } from '@/pages/Dashboard';
 import { TrackPage } from '@/pages/TrackPage';
 import { MobilePage } from '@/pages/MobilePage';
 
+const queryClient = new QueryClient();
+
 export default function App() {
   return (
-    <AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
       <BrowserRouter>
         <div className="min-h-screen bg-creme selection:bg-cacao-dore/30">
           <Routes>
@@ -57,5 +61,6 @@ export default function App() {
         </div>
       </BrowserRouter>
     </AuthProvider>
+    </QueryClientProvider>
   );
 }

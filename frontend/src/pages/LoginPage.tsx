@@ -140,29 +140,6 @@ export const LoginPage: React.FC = () => {
           </button>
         </form>
 
-        <div className="mt-8 space-y-4">
-          <p className="text-[10px] font-black uppercase tracking-widest text-cafe-clair text-center">Accès Raccourcis (Démo)</p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {ACTORS.map(actor => (
-              <button
-                key={actor.id}
-                onClick={() => handleShortcutLogin(actor.id, 'password123')}
-                className={`p-3 rounded-2xl border border-cacao-dore/5 ${actor.bg} flex flex-col items-center gap-1 hover:scale-105 transition-all group`}
-              >
-                <actor.icon size={16} className={actor.color} />
-                <span className="text-[8px] font-black uppercase tracking-tighter text-cafe-profondeur group-hover:text-cacao-vert">{actor.role}</span>
-              </button>
-            ))}
-            <button
-               onClick={() => handleShortcutLogin('admin@chaincacao.tg', 'CacaoTogo2026!')}
-               className="p-3 rounded-2xl border border-cacao-dore/5 bg-gray-100 flex flex-col items-center gap-1 hover:scale-105 transition-all group"
-            >
-              <Cog size={16} className="text-gray-600" />
-              <span className="text-[8px] font-black uppercase tracking-tighter text-gray-600">Admin</span>
-            </button>
-          </div>
-        </div>
-
         <div className="mt-10 pt-8 border-t border-cacao-dore/10 text-center">
           <p className="text-[10px] text-cafe-clair font-bold uppercase tracking-widest leading-relaxed mb-4">
             Note: Contactez l'administrateur système pour obtenir vos identifiants ou réinitialiser votre accès.
