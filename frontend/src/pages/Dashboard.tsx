@@ -48,6 +48,12 @@ export const Dashboard: React.FC = () => {
   const notifications = (data?.notifications || []) as any[];
   const usersList = (data?.users || []) as any[];
 
+  useEffect(() => {
+    if (isError) {
+      console.error('Dashboard Data Error:', data);
+    }
+  }, [isError, data]);
+
   const [showAddForm, setShowAddForm] = useState(false);
   const [newLot, setNewLot] = useState({ quantity: 1000, origin: '', gps: '', photo: '', note: '' });
   const [selectedQR, setSelectedQR] = useState<string | null>(null);
@@ -199,7 +205,7 @@ export const Dashboard: React.FC = () => {
                 <p className="text-cafe-moyen text-sm font-medium">Récupérez vos QR codes et suivez la validation.</p>
               </div>
               <div className="mt-8 space-y-4">
-                {lots.filter(l => l.producerId === user.id).slice(0, 3).map(lot => (
+                {lots.filter(l => l.producerId === user?.id).slice(0, 3).map(lot => (
                   <div key={lot.id} className="p-4 bg-white/80 rounded-2xl border border-cacao-dore/5 flex items-center justify-between group">
                     <div className="flex items-center gap-4">
                       <button 
@@ -373,7 +379,7 @@ export const Dashboard: React.FC = () => {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {usersList.map((u: any) => (
+                    {usersList?.length > 0 ? usersList.map((u: any) => (
                       <GlassCard key={u.id} className="p-6 space-y-4 border-cacao-dore/10">
                         <div className="flex items-center gap-4">
                           <div className="w-12 h-12 rounded-2xl bg-cafe-profondeur/5 flex items-center justify-center text-cafe-profondeur">
@@ -389,7 +395,12 @@ export const Dashboard: React.FC = () => {
                           <p className="flex justify-between text-cafe-moyen"><span>Email:</span> <span className="font-bold text-cafe-profondeur text-right truncate ml-4 font-mono">{u.email}</span></p>
                         </div>
                       </GlassCard>
-                    ))}
+                    )) : (
+                      <div className="col-span-full py-20 text-center glass border-dashed">
+                        <Users className="mx-auto mb-4 opacity-20" size={48} />
+                        <p className="text-sm font-black uppercase tracking-widest text-cafe-clair">Chargement des acteurs...</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -417,8 +428,8 @@ export const Dashboard: React.FC = () => {
                     <tr key={lot.id} className="border-b border-cacao-dore/5 hover:bg-cafe-profondeur/[0.02] transition-colors">
                       <td className="px-6 py-5">
                         <div className="flex flex-col">
-                          <span className="font-mono font-bold text-cacao-vert uppercase tracking-tighter text-lg leading-none">#{lot.id.split('-')[1]}</span>
-                          <span className="text-[9px] font-black uppercase text-cafe-clair mt-1 italic tracking-widest">Block 0x{lot.id.split('-')[1]}...</span>
+                          <span className="font-mono font-bold text-cacao-vert uppercase tracking-tighter text-lg leading-none">#{lot.id?.split('-')?.[1] || lot.id}</span>
+                          <span className="text-[9px] font-black uppercase text-cafe-clair mt-1 italic tracking-widest">Block 0x{lot.id?.split('-')?.[1] || '000'}...</span>
                         </div>
                       </td>
                       <td className="px-6 py-5">
@@ -434,7 +445,7 @@ export const Dashboard: React.FC = () => {
                             ? 'bg-cacao-vert/10 text-cacao-vert border-cacao-vert/20' 
                             : 'bg-orange-50 text-orange-600 border-orange-100'
                         }`}>
-                          {lot.history[lot.history.length-1].label}
+                          {lot.history?.[lot.history.length - 1]?.label || 'Initialisation'}
                         </div>
                       </td>
                       <td className="px-6 py-5">
@@ -726,7 +737,7 @@ export const Dashboard: React.FC = () => {
             >
               <div className="space-y-2">
                 <h3 className="text-3xl font-display font-bold tracking-tighter">Passeport Digital</h3>
-                <p className="text-sm font-black uppercase tracking-widest text-cacao-vert">Lot #{selectedQR.split('-')[1]}</p>
+                <p className="text-sm font-black uppercase tracking-widest text-cacao-vert">Lot #{selectedQR?.split('-')?.[1] || selectedQR}</p>
               </div>
               
               <div className="bg-white p-6 rounded-3xl shadow-inner inline-block mx-auto">
