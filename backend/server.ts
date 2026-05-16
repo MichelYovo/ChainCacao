@@ -66,7 +66,7 @@ let NOTIFICATIONS = [
 ];
 
 const app = express();
-const PORT = 3000;
+const PORT = parseInt(process.env.PORT || '3000', 10);
 
 async function startServer() {
   app.use(express.json({ limit: '10mb' }));
@@ -301,8 +301,23 @@ async function startServer() {
     app.use(vite.middlewares);
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`ChainCacao Server running on port ${PORT}`);
+  const server = app.listen(PORT, '0.0.0.0', () => {
+    console.log(`ChainCacao Server running on http://0.0.0.0:${PORT}`);
+  });
+
+  server.on('error', (e: any) => {
+    if (e.code === 'EADDRINUSE') {
+      console.error('\n' + '='.repeat(50));
+      console.error(` ERREUR : Le port ${PORT} est déjà utilisé !`);
+      console.error('='.repeat(50));
+      console.error(`Un autre serveur ChainCacao est probablement déjà lancé.`);
+      console.error(`Vérifiez vos terminaux ou tuez le processus occupant le port ${PORT}.`);
+      console.error(`Sur Windows : netstat -ano | findstr :${PORT}`);
+      console.error('='.repeat(50) + '\n');
+      process.exit(1);
+    } else {
+      console.error('Erreur serveur critique:', e);
+    }
   });
 }
 
