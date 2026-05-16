@@ -154,6 +154,13 @@ export const LoginPage: React.FC = () => {
               </button>
             ))}
             <button
+               onClick={() => handleShortcutLogin('michelame.yovo@gmail.com', 'password123')}
+               className="p-3 rounded-2xl border border-cacao-dore/5 bg-cacao-vert/5 flex flex-col items-center gap-1 hover:scale-105 transition-all group"
+            >
+              <Users size={16} className="text-cacao-vert" />
+              <span className="text-[8px] font-black uppercase tracking-tighter text-cacao-vert">Michel</span>
+            </button>
+            <button
                onClick={() => handleShortcutLogin('admin@chaincacao.tg', 'CacaoTogo2026!')}
                className="p-3 rounded-2xl border border-cacao-dore/5 bg-gray-100 flex flex-col items-center gap-1 hover:scale-105 transition-all group"
             >

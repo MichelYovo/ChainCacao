@@ -1,11 +1,14 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import {defineConfig, loadEnv} from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 export default defineConfig(({mode}) => {
-  const env = loadEnv(mode, path.resolve(__dirname, '..'), ''); // Search env in root
+  const env = loadEnv(mode, process.cwd(), ''); // Search env in root
   return {
     plugins: [
       react(), 
@@ -50,10 +53,10 @@ export default defineConfig(({mode}) => {
         }
       })
     ],
-    root: __dirname,
+    root: path.resolve(__dirname, 'frontend'),
     resolve: {
       alias: {
-        '@': path.resolve(__dirname, 'src'),
+        '@': path.resolve(__dirname, 'frontend/src'),
       },
     },
     build: {

@@ -30,7 +30,8 @@ let ACTORS = [
   { id: "EXP-500", role: "Exportateur", name: "Togo Export", email: "export@cargo.tg", password: "password123", color: "#DAA520", phone: "+228 93 00 04" },
   { id: "BUY-EU-01", role: "Acheteur EU", name: "BioChoc Europe", email: "buyer@biochoc.eu", password: "password123", color: "#2196F3", phone: "+32 2 00 01", location: "Anvers, Belgique" },
   { id: "MIN-AGRIC-01", role: "Ministère", name: "Direction Agriculture", email: "contact@agriculture.gouv.tg", password: "password123", color: "#1a3a3a", phone: "+228 22 21 00" },
-  { id: "ADMIN-01", role: "Administrateur", name: "Super Administrateur", email: "admin@chaincacao.tg", password: "CacaoTogo2026!", color: "#333333" }
+  { id: "ADMIN-01", role: "Administrateur", name: "Super Administrateur", email: "admin@chaincacao.tg", password: "CacaoTogo2026!", color: "#333333" },
+  { id: "ADMIN-02", role: "Administrateur", name: "Michel Ame Yovo", email: "michelame.yovo@gmail.com", password: "password123", color: "#2d5a27" }
 ];
 
 // Lot Status: 0: Récolté, 1: Certifié, 2: En Transit, 3: Reçu par Exportateur, 4: Reçu par Acheteur EU
@@ -280,25 +281,13 @@ app.get('/api/cacao/stats', authenticateToken, (req, res) => {
 const isProd = process.env.NODE_ENV === 'production' || !!process.env.VERCEL;
 
 // Vercel and Production static file serving
-const getDistPath = () => {
-  const possiblePaths = [
-    path.join(process.cwd(), 'dist'),
-    path.join(DIRNAME, 'dist'),
-    path.join(DIRNAME, 'frontend/dist'),
-  ];
-  
-  for (const p of possiblePaths) {
-    if (fs.existsSync(path.join(p, 'index.html'))) {
-      return p;
-    }
-  }
-  return isProd ? path.join(process.cwd(), 'dist') : path.join(DIRNAME, 'frontend');
-};
-
-const distPath = getDistPath();
+const distPath = path.join(process.cwd(), 'dist');
 
 if (isProd) {
-  console.log(`Serving static files from detected path: ${distPath}`);
+  console.log(`Serving static files from: ${distPath}`);
+  if (!fs.existsSync(path.join(distPath, 'index.html'))) {
+    console.warn('WARNING: dist/index.html not found. Frontend might not load.');
+  }
   app.use(express.static(distPath, {
     maxAge: '1d',
     index: 'index.html'
@@ -341,6 +330,7 @@ async function startServer() {
     const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
       root: path.resolve(DIRNAME, 'frontend'),
+      configFile: path.resolve(DIRNAME, 'vite.config.ts'),
       server: { middlewareMode: true },
       appType: 'spa',
     });

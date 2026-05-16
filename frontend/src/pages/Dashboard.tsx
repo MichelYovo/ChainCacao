@@ -48,6 +48,11 @@ export const Dashboard: React.FC = () => {
   const notifications = (data?.notifications || []) as any[];
   const usersList = (data?.users || []) as any[];
 
+  // Clean data to avoid null pointer crashes
+  const safeLots = Array.isArray(lots) ? lots.filter(l => l && typeof l === 'object') : [];
+  const safeNotifications = Array.isArray(notifications) ? notifications.filter(n => n && typeof n === 'object') : [];
+  const safeUsers = Array.isArray(usersList) ? usersList.filter(u => u && typeof u === 'object') : [];
+
   useEffect(() => {
     if (isError) {
       console.error('Dashboard Data Error:', data);
@@ -88,7 +93,7 @@ export const Dashboard: React.FC = () => {
             timestamp: new Date().toISOString(),
             status: 0,
             history: [{ label: 'Enregistrement...', date: new Date().toISOString() }] 
-          }, ...old.lots]
+          }, ...(old?.lots || [])]
         }));
       }
       return { previousData };
@@ -111,7 +116,7 @@ export const Dashboard: React.FC = () => {
       if (previousData) {
         queryClient.setQueryData(['dashboardInit', user?.role], (old: any) => ({
           ...old,
-          lots: old.lots.map((l: any) => l.id === id ? { ...l, status: data.status } : l)
+          lots: (old?.lots || []).map((l: any) => l.id === id ? { ...l, status: data.status } : l)
         }));
       }
       return { previousData };
@@ -150,6 +155,22 @@ export const Dashboard: React.FC = () => {
         <Loader2 className="animate-spin text-cacao-vert w-12 h-12 mx-auto" />
         <p className="text-[10px] font-black uppercase tracking-widest text-cafe-clair">Chargement du Registre Immuable...</p>
       </div>
+    </div>
+  );
+
+  if (isError) return (
+    <div className="min-h-screen flex items-center justify-center bg-creme p-6">
+      <GlassCard className="p-12 text-center max-w-lg border-red-500/10">
+        <AlertTriangle className="mx-auto mb-6 text-red-500" size={48} />
+        <h2 className="text-2xl font-bold text-cafe-profondeur mb-4">Erreur de Connexion</h2>
+        <p className="text-cafe-moyen mb-8">Impossible de synchroniser avec le régistre central. Vérifiez votre connexion internet.</p>
+        <button 
+           onClick={() => refetch()}
+           className="px-8 py-3 bg-cafe-profondeur text-white rounded-xl font-bold hover:bg-black transition-all"
+        >
+          Réessayer
+        </button>
+      </GlassCard>
     </div>
   );
 
@@ -205,7 +226,7 @@ export const Dashboard: React.FC = () => {
                 <p className="text-cafe-moyen text-sm font-medium">Récupérez vos QR codes et suivez la validation.</p>
               </div>
               <div className="mt-8 space-y-4">
-                {lots.filter(l => l.producerId === user?.id).slice(0, 3).map(lot => (
+                {safeLots.filter(l => l.producerId === user?.id).slice(0, 3).map(lot => (
                   <div key={lot.id} className="p-4 bg-white/80 rounded-2xl border border-cacao-dore/5 flex items-center justify-between group">
                     <div className="flex items-center gap-4">
                       <button 
@@ -217,7 +238,7 @@ export const Dashboard: React.FC = () => {
                       </button>
                       <div>
                         <p className="text-sm font-bold text-cafe-profondeur">{lot.quantity} kg • {lot.origin}</p>
-                        <p className="text-[10px] font-bold text-cafe-clair uppercase tracking-widest">{lot.history[lot.history.length-1].label}</p>
+                        <p className="text-[10px] font-bold text-cafe-clair uppercase tracking-widest">{lot.history && lot.history.length > 0 ? lot.history[lot.history.length - 1].label : 'Initialisation'}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
@@ -242,10 +263,10 @@ export const Dashboard: React.FC = () => {
               <p className="text-creme/70 text-sm mb-8">Vérifiez les preuves de non-déforestation EUDR pour les lots ci-dessous.</p>
               
               <div className="space-y-4">
-                {lots.filter(l => l.status === 0).length === 0 ? (
+                {safeLots.filter(l => l.status === 0).length === 0 ? (
                   <p className="text-center py-8 text-creme/50 uppercase text-xs font-black tracking-widest">Aucun lot en attente</p>
                 ) : (
-                  lots.filter(l => l.status === 0).map(lot => (
+                  safeLots.filter(l => l.status === 0).map(lot => (
                     <div key={lot.id} className="p-6 bg-white/10 rounded-2xl border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4">
                       <div className="flex gap-4">
                         <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center">
@@ -276,7 +297,7 @@ export const Dashboard: React.FC = () => {
             <div className="space-y-6">
               <h3 className="text-3xl font-black italic text-cafe-profondeur">Plan de Transport</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {lots.filter(l => l.status === 1).map(lot => (
+                {safeLots.filter(l => l.status === 1).map(lot => (
                   <div key={lot.id} className="glass p-6 border-orange-200">
                     <div className="flex justify-between items-start mb-4">
                       <div className="p-3 bg-orange-100 text-orange-600 rounded-2xl">
@@ -302,7 +323,7 @@ export const Dashboard: React.FC = () => {
             <GlassCard className="p-8 bg-cacao-dore text-cafe-profondeur border-none shadow-xl shadow-cacao-dore/10">
               <h3 className="text-2xl font-black italic mb-6">Contrôle Réception Portuaire</h3>
               <div className="space-y-4">
-                {lots.filter(l => l.status === 2).map(lot => (
+                {safeLots.filter(l => l.status === 2).map(lot => (
                   <div key={lot.id} className="p-6 bg-white/40 rounded-3xl border border-white/20 flex justify-between items-center">
                     <div>
                       <p className="text-lg font-bold">Lot {lot.id}</p>
@@ -324,7 +345,7 @@ export const Dashboard: React.FC = () => {
             <GlassCard className="p-8 bg-blue-600 text-white border-none shadow-xl shadow-blue-500/20">
               <h3 className="text-2xl font-black italic mb-6">Réception de Lots (Europe)</h3>
               <div className="space-y-4">
-                {lots.filter(l => l.status === 3).map(lot => (
+                {safeLots.filter(l => l.status === 3).map(lot => (
                   <div key={lot.id} className="p-6 bg-white/10 rounded-3xl border border-white/20 flex justify-between items-center">
                     <div>
                       <p className="text-lg font-bold">Lot {lot.id}</p>
@@ -379,7 +400,7 @@ export const Dashboard: React.FC = () => {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {usersList?.length > 0 ? usersList.map((u: any) => (
+                    {safeUsers.length > 0 ? safeUsers.map((u: any) => (
                       <GlassCard key={u.id} className="p-6 space-y-4 border-cacao-dore/10">
                         <div className="flex items-center gap-4">
                           <div className="w-12 h-12 rounded-2xl bg-cafe-profondeur/5 flex items-center justify-center text-cafe-profondeur">
@@ -424,7 +445,7 @@ export const Dashboard: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="text-sm">
-                  {lots.map((lot) => (
+                  {safeLots.map((lot) => (
                     <tr key={lot.id} className="border-b border-cacao-dore/5 hover:bg-cafe-profondeur/[0.02] transition-colors">
                       <td className="px-6 py-5">
                         <div className="flex flex-col">
@@ -445,7 +466,7 @@ export const Dashboard: React.FC = () => {
                             ? 'bg-cacao-vert/10 text-cacao-vert border-cacao-vert/20' 
                             : 'bg-orange-50 text-orange-600 border-orange-100'
                         }`}>
-                          {lot.history?.[lot.history.length - 1]?.label || 'Initialisation'}
+                          {lot.history && lot.history.length > 0 ? lot.history[lot.history.length - 1].label : 'Initialisation'}
                         </div>
                       </td>
                       <td className="px-6 py-5">
@@ -469,13 +490,13 @@ export const Dashboard: React.FC = () => {
               <h3 className="text-2xl font-black italic tracking-tighter">Alertes Systèmes</h3>
             </div>
             <div className="space-y-3">
-              {notifications.filter(n => n.toRole === user?.role).length === 0 ? (
+              {safeNotifications.filter(n => n.toRole === user?.role).length === 0 ? (
                 <div className="p-12 glass border-dashed flex flex-col items-center opacity-40">
                   <Package className="mb-2 text-cafe-clair" />
                   <p className="text-[10px] font-black uppercase tracking-widest text-cafe-clair">Registre à jour</p>
                 </div>
               ) : (
-                notifications.filter(n => n.toRole === user?.role).map(n => (
+                safeNotifications.filter(n => n.toRole === user?.role).map(n => (
                   <motion.div 
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -752,11 +773,11 @@ export const Dashboard: React.FC = () => {
               <div className="grid grid-cols-2 gap-4 text-left">
                 <div className="p-4 bg-creme rounded-2xl">
                   <p className="text-[8px] font-black uppercase text-cafe-clair mb-1">Poids</p>
-                  <p className="text-sm font-bold">{lots.find(l => l.id === selectedQR)?.quantity} kg</p>
+                  <p className="text-sm font-bold">{safeLots.find(l => l.id === selectedQR)?.quantity} kg</p>
                 </div>
                 <div className="p-4 bg-creme rounded-2xl">
                   <p className="text-[8px] font-black uppercase text-cafe-clair mb-1">Origine</p>
-                  <p className="text-sm font-bold truncate">{lots.find(l => l.id === selectedQR)?.origin}</p>
+                  <p className="text-sm font-bold truncate">{safeLots.find(l => l.id === selectedQR)?.origin}</p>
                 </div>
               </div>
 

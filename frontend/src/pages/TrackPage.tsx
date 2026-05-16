@@ -259,11 +259,11 @@ export const TrackPage: React.FC = () => {
                 </div>
               )}
 
-              {(lot.photos && lot.photos.length > 0 || lot.gps) && (
+              {(lot?.photos && lot.photos.length > 0 || lot?.gps) && (
                 <div className="space-y-4">
                   <h3 className="text-3xl font-bold font-display italic">Preuves Visuelles & Géo</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {lot.photos && lot.photos.length > 0 && (
+                    {lot?.photos && lot.photos.length > 0 && (
                       <GlassCard className="p-0 overflow-hidden h-64 bg-cafe-profondeur group relative">
                         <img src={lot.photos[0]} alt="Lot cocoa" className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-all" />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
@@ -289,7 +289,7 @@ export const TrackPage: React.FC = () => {
 
               <h3 className="text-3xl font-bold font-display italic">Cycle de Vie du Lot</h3>
               <div className="space-y-0">
-                {lot.history.map((step, idx) => (
+                {lot?.history && lot.history.map((step, idx) => (
                   <div key={idx} className="relative pl-12 pb-12 last:pb-0">
                     {/* Immersive Vertical Line */}
                     {idx < lot.history.length - 1 && (
